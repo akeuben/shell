@@ -1,0 +1,37 @@
+@use "./control_center/Bluetooth.scss";
+@use "./control_center/Button.scss";
+@use "./control_center/Slider.scss";
+@use "./control_center/Switch.scss";
+@use "../colors.scss" as *;
+
+.ControlCenter {
+    background: gtkalpha($window_bg_color, 0.4);
+    font-weight: bold;
+    border-radius: 20px;
+    padding: 20px;
+}
+
+.control-center-core {
+  min-height: 300px;
+}
+
+.widget-page-header * {
+  font-size: 16px;
+}
+
+.list-section-part {
+    padding: 20px;
+    background-color: #ffffff11;
+    min-width: 20px;
+    border-radius: 5px;
+}
+
+.list-section-part.first {
+    border-top-left-radius: 30px;
+    border-top-right-radius: 30px;
+}
+
+.list-section-part.last {
+    border-bottom-left-radius: 30px;
+    border-bottom-right-radius: 30px;
+}

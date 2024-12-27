@@ -1,17 +1,30 @@
 // https://gitlab.gnome.org/GNOME/gtk/-/blob/gtk-3-24/gtk/theme/Adwaita/_colors-public.scss
-$theme_fg_color: "@theme_fg_color";
-$theme_bg_color: "@theme_bg_color";
+@use "styles/colors.scss" as *;
+@use "styles/widget/Bar.scss";
+@use "styles/widget/ControlCenter.scss";
 
-window.Bar {
-    background: transparent;
-    color: #{$theme_bg_color};
-    font-weight: bold;
+* {
+  font-size: 14px;
+}
 
-    >centerbox {
-        border-radius: 10px;
-    }
+icon {
+  font-size: 16px;
+}
 
-    button {
-        border-radius: 8px;
-    }
+label {
+  color: $window_fg_color;
+}
+
+button:hover {
+  background: $sidebar_bg_color;
+}
+
+scrollable {
+  outline: none;
+  border: none;
+}
+
+scrollable>* {
+  outline: none;
+  border: none;
 }
