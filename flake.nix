@@ -1,5 +1,5 @@
 {
-    description = "My Awesome Desktop Shell";
+    description = "KappaShell: An android inspired shell for Hyprland. Made using Astal.";
 
     inputs = {
         nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
@@ -22,7 +22,7 @@
             default = ags.lib.bundle {
                 inherit pkgs;
                 src = ./.;
-                name = "my-shell";
+                name = "kappashell";
                 entry = "app.ts";
 
                 # additional libraries and executables to add to gjs' runtime
@@ -34,6 +34,7 @@
                     ags.packages.${system}.bluetooth
                     ags.packages.${system}.wireplumber
                     ags.packages.${system}.notifd
+                    ags.packages.${system}.mpris
                     pkgs.evolution-data-server
                 ];
 
