@@ -23,7 +23,7 @@ export default function BarWidget({monitor}: {monitor: Gdk.Monitor}) {
             <ClientsWidget />
         </BarArea>
         <BarArea align={Gtk.Align.CENTER}>
-            <TimeWidget />
+            <TimeWidget monitor={monitor} />
         </BarArea>
         <BarArea align={Gtk.Align.END}>
             <WeatherWidget />

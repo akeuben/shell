@@ -34,7 +34,9 @@
                     ags.packages.${system}.bluetooth
                     ags.packages.${system}.wireplumber
                     ags.packages.${system}.notifd
+                    pkgs.evolution-data-server
                 ];
+
             };
         };
 
@@ -44,6 +46,10 @@
                     # includes all Astal libraries
                     ags.packages.${system}.agsFull
                     pkgs.gobject-introspection
+                    pkgs.evolution-data-server
+                ];
+                propogatedUserEnvPkgs = [
+                    pkgs.evolution-data-server
                 ];
             };
         };

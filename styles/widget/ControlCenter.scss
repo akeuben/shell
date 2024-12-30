@@ -1,11 +1,13 @@
 @use "./control_center/Bluetooth.scss";
 @use "./control_center/Button.scss";
+@use "./control_center/Music.scss";
+@use "./control_center/Network.scss";
 @use "./control_center/Slider.scss";
 @use "./control_center/Switch.scss";
 @use "../colors.scss" as *;
 
 .ControlCenter {
-    background: gtkalpha($window_bg_color, 0.4);
+    background: gtkshade($window_bg_color, 0.8);
     font-weight: bold;
     border-radius: 20px;
     padding: 20px;

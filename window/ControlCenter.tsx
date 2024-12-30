@@ -6,10 +6,12 @@ export default function ControlCenter(gdkmonitor: Gdk.Monitor) {
         className="ControlCenter"
         name={`control-center-${App.get_monitors().indexOf(gdkmonitor)}`}
         visible={false}
-        margin={20}
         namespace="shell:control_center"
         gdkmonitor={gdkmonitor}
+        layer={Astal.Layer.TOP}
         exclusivity={Astal.Exclusivity.EXCLUSIVE}
+        canFocus={true}
+        focus_on_click={true}
         anchor={Astal.WindowAnchor.TOP
             | Astal.WindowAnchor.RIGHT}
         application={App}>

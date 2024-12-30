@@ -6,7 +6,7 @@ import AstalWp from "gi://AstalWp?version=0.1";
 import Binding, { bind } from "gjs/binding";
 import { App, Astal, Gdk, Gtk } from "gjs/gtk3";
 import Variable from "gjs/variable";
-import { audio_state_to_icon, bluetooth_state_to_icon, internet_type_to_icon } from "../../utils/icons";
+import { bluetooth_state_to_icon, internet_type_to_icon } from "../../utils/icons";
 
 const StatusBar = ({monitor}: {monitor: Gdk.Monitor}) => {
     const network = AstalNetwork.get_default();
@@ -15,23 +15,27 @@ const StatusBar = ({monitor}: {monitor: Gdk.Monitor}) => {
 
     const internet_type = bind(network, "primary");
     const wifi = bind(network, "wifi");
-    const internet_icon = Variable.derive([internet_type, wifi], (type, wifi) => internet_type_to_icon(type, wifi));
-    let volume: Binding<number | null> = new Variable(null)();
-    let mute: Binding<boolean> = new Variable(false)();
+    const wifi_icon = bind(network.wifi, "icon_name");
+    const wired = bind(network, "wired");
+    const wired_icon = bind(network.wired, "icon_name");
+    const internet_icon = Variable.derive([internet_type, wifi, wired, wifi_icon, wired_icon], (type, wifi, wired) => internet_type_to_icon(type, wifi, wired));
+
+    const window = App.get_window(`control-center-${App.get_monitors().indexOf(monitor)}`);
+    if(!window) return <></>;
+
+    let audio_icon: string | Binding<string> = "audio-volume-muted-blocking-symbolic";
     if(wp) {
-        volume = bind(wp.audio.default_speaker, "volume").as(v => v * 100);
-        mute = bind(wp.audio.default_speaker, "mute");
+        audio_icon = bind(wp.default_speaker, "volume_icon");
     }
-    const audio_icon = Variable.derive([volume, mute], (v, m) => audio_state_to_icon(v === null ? v : (v-54) / (100-54) * 100, m));
 
     const bluetooth_icon = bind(bluetooth.adapter, "powered").as(bluetooth_state_to_icon);
-    return <button cursor="pointer" className="bar-section-part last" onClickRelease={() => {
+    return <button cursor="pointer" className={bind(window, "visible").as(visible => `bar-section-part last ${visible ? "active" : ""}`)} onClickRelease={() => {
         App.toggle_window(`control-center-${App.get_monitors().indexOf(monitor)}`);
     }}>
         <box spacing={10}>
-            <label label={internet_icon()} />
-            <label label={bluetooth_icon} />
-            <label label={audio_icon()} />
+            <icon icon={internet_icon()} />
+            <icon icon={bluetooth_icon} />
+            <icon icon={audio_icon} />
         </box>
     </button>
 }

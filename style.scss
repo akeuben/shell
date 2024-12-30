@@ -1,6 +1,7 @@
 // https://gitlab.gnome.org/GNOME/gtk/-/blob/gtk-3-24/gtk/theme/Adwaita/_colors-public.scss
 @use "styles/colors.scss" as *;
 @use "styles/widget/Bar.scss";
+@use "styles/widget/Calendar.scss";
 @use "styles/widget/ControlCenter.scss";
 
 * {
@@ -11,8 +12,9 @@ icon {
   font-size: 16px;
 }
 
-label {
+label, icon, spinner {
   color: $window_fg_color;
+  opacity: 1;
 }
 
 button:hover {
@@ -27,4 +29,8 @@ scrollable {
 scrollable>* {
   outline: none;
   border: none;
+}
+
+.cover {
+  background: gtkalpha($window_bg_color, 0.3);
 }

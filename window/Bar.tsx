@@ -7,6 +7,7 @@ export default function Bar(gdkmonitor: Gdk.Monitor) {
         namespace="shell:bar"
         gdkmonitor={gdkmonitor}
         exclusivity={Astal.Exclusivity.EXCLUSIVE}
+        layer={Astal.Layer.TOP}
         anchor={Astal.WindowAnchor.TOP
             | Astal.WindowAnchor.LEFT
             | Astal.WindowAnchor.RIGHT}

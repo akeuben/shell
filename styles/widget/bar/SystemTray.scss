@@ -17,3 +17,11 @@
     border-top-left-radius: 20px;
     border-bottom-left-radius: 20px;
 }
+
+.bar-section-part.last.active {
+  background-color: $accent-color;
+}
+
+.bar-section-part.last.active * {
+  color: $window_bg_color;
+}

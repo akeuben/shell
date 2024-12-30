@@ -27,9 +27,9 @@ const ActionButton = ({is_active, click_action, icon, title, className}: {is_act
     }
     return <button cursor="pointer" className={get_class(is_active)} onClick={click_action}>
         <box spacing={10}>
-            <label label={icon} />
+            <icon icon={icon} />
             <label label={get_title(title)} hexpand={true} halign={Gtk.Align.START} />
-            <label label="󰐊" />
+            <icon icon="go-next-symbolic" />
         </box>
     </button>
 }
@@ -51,7 +51,7 @@ const ToggleButton = ({is_active, click_action, title, icon, className}: {is_act
     }
     return <button cursor="pointer" className={get_class(is_active)} onClick={click_action}>
         <box spacing={10}>
-            <label label={icon} />
+            <icon icon={icon} />
             <label label={get_title(title)} hexpand={true} halign={Gtk.Align.START} />
         </box>
     </button>
@@ -78,15 +78,19 @@ const get_bluetooth_name = (devices: AstalBluetooth.Device[]) => {
     return connected[0].name;
 }
 
-export const InternetButton = () => {
-    const internet = AstalNetwork.get_default();
-    const internet_type = bind(internet, "primary");
-    const wifi = bind(internet, "wifi");
-    const internet_icon = Variable.derive([internet_type, wifi], (type, wifi) => internet_type_to_icon(type, wifi));
-    const internet_name = Variable.derive([internet_type, wifi], (type, wifi) => network_name(type, wifi));
-    return <ActionButton is_active={bind(internet, "connectivity").as(c => 
+export const InternetButton = ({on_click}: {on_click: () => void}) => {
+    const network = AstalNetwork.get_default();
+    const internet_type = bind(network, "primary");
+    const wifi = bind(network, "wifi");
+    const wifi_icon = bind(network.wifi, "icon_name");
+    const wired = bind(network, "wired");
+    const wired_icon = bind(network.wired, "icon_name");
+    const internet_icon = Variable.derive([internet_type, wifi, wired, wifi_icon, wired_icon], (type, wifi, wired) => internet_type_to_icon(type, wifi, wired));
+
+    const internet_name = Variable.derive([internet_type, wifi, wired, bind(network.wifi, "ssid")], (type, wifi) => network_name(type, wifi));
+    return <ActionButton is_active={bind(network, "connectivity").as(c => 
         [AstalNetwork.Connectivity.FULL, AstalNetwork.Connectivity.LIMITED, AstalNetwork.Connectivity.PORTAL].includes(c)
-    )} click_action={() => {}} icon={internet_icon()} title={internet_name()}/>
+    )} click_action={on_click} icon={internet_icon()} title={internet_name()}/>
 }
 
 export const BluetoothButton = ({on_click}: {on_click: () => void}) => {
@@ -101,7 +105,7 @@ export const BluetoothButton = ({on_click}: {on_click: () => void}) => {
 export const DNDButton = () => {
     const notifd = AstalNotifd.get_default();
 
-    return <ToggleButton is_active={bind(notifd, "dont_disturb")} click_action={() => notifd.set_dont_disturb(!notifd.dontDisturb)} title="Do Not Disturb" icon="󰽥" className="dnd"/>
+    return <ToggleButton is_active={bind(notifd, "dont_disturb")} click_action={() => notifd.set_dont_disturb(!notifd.dontDisturb)} title="Do Not Disturb" icon="night-light-symbolic" className="dnd"/>
 }
 
 export const MicMuteButton = () => {
@@ -109,5 +113,5 @@ export const MicMuteButton = () => {
     if(!audio) return <></>
     const muted = bind(audio.default_microphone, "mute");
 
-    return <ToggleButton is_active={muted.as(m => !m)} click_action={() => audio.default_microphone.set_mute(!audio.default_microphone.mute)} title={muted.as(m => `Mic is ${m ? "Off" : "On"}`)} icon={muted.as(m => m ? "󰍭 " : "󰍬 ")}/>
+    return <ToggleButton is_active={muted.as(m => !m)} click_action={() => audio.default_microphone.set_mute(!audio.default_microphone.mute)} title={muted.as(m => `Mic is ${m ? "Off" : "On"}`)} icon="audio-input-microphone-high-symbolic"/>
 }
