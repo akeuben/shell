@@ -50,7 +50,7 @@ const ApplicationEntry = ({entry}: {entry: Tray.TrayItem}) => {
             menu?.popup_at_widget(button, Gdk.Gravity.NORTH, Gdk.Gravity.SOUTH, null);
         }
     }}>
-        <icon gicon={entry.gicon} />
+        <icon gicon={bind(entry, "gicon")} pixbuf={bind(entry, "icon_pixbuf").as(pixbuf => pixbuf ? pixbuf : undefined)} />
     </button>
 }
 
