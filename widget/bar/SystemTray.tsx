@@ -17,7 +17,7 @@ const StatusBar = ({monitor}: {monitor: Gdk.Monitor}) => {
     const wifi = bind(network, "wifi");
     const wifi_icon = bind(network.wifi, "icon_name");
     const wired = bind(network, "wired");
-    const wired_icon = bind(network.wired, "icon_name");
+    const wired_icon = network.wired ? bind(network.wired, "icon_name") : Variable("")();
     const internet_icon = Variable.derive([internet_type, wifi, wired, wifi_icon, wired_icon], (type, wifi, wired) => internet_type_to_icon(type, wifi, wired));
 
     const window = App.get_window(`control-center-${App.get_monitors().indexOf(monitor)}`);
@@ -50,7 +50,7 @@ const ApplicationEntry = ({entry}: {entry: Tray.TrayItem}) => {
             menu?.popup_at_widget(button, Gdk.Gravity.NORTH, Gdk.Gravity.SOUTH, null);
         }
     }}>
-        <icon pixbuf={entry.icon_pixbuf || undefined} />
+        <icon gicon={entry.gicon} />
     </button>
 }
 

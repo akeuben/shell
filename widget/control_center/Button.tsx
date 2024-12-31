@@ -84,7 +84,7 @@ export const InternetButton = ({on_click}: {on_click: () => void}) => {
     const wifi = bind(network, "wifi");
     const wifi_icon = bind(network.wifi, "icon_name");
     const wired = bind(network, "wired");
-    const wired_icon = bind(network.wired, "icon_name");
+    const wired_icon = network.wired ? bind(network.wired, "icon_name") : new Variable("")();
     const internet_icon = Variable.derive([internet_type, wifi, wired, wifi_icon, wired_icon], (type, wifi, wired) => internet_type_to_icon(type, wifi, wired));
 
     const internet_name = Variable.derive([internet_type, wifi, wired, bind(network.wifi, "ssid")], (type, wifi) => network_name(type, wifi));
