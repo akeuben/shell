@@ -7,7 +7,6 @@ export const Search = ({searchTerm, monitor}: {searchTerm: Variable<string>, mon
         searchTerm.set(e.text);
     }} onKeyPressEvent={(s, e) => {
         const [keyval, keycode] = e.get_keycode();
-        console.log(keycode);
         if(keyval && [36, 104].includes(keycode)) {
             const results = RunnerSettings.find_all_results(s.text);
             if(results.length > 0) {

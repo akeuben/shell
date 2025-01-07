@@ -26,7 +26,6 @@ const has_results = (search_term: string) => {
             return false;
         }
         const result = math.evaluate(search_term);
-        console.log(result);
         if(["undefined"].includes(typeof result)) {
             return false;
         }

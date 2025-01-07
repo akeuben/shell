@@ -31,7 +31,10 @@ App.start({
                 }
                 case "runner": {
                     const monitor = request.monitor || AstalHyprland.get_default().get_focused_monitor().id;
-                    App.get_window(`runner-${monitor}`)?.show();
+                    const window = App.get_window(`runner-${monitor}`);
+                    if(window) {
+                        window.set_visible(!window.visible);
+                    }
                 }
                 default: {
                     res("invalid request type");

@@ -15,10 +15,10 @@ export const WeatherWidget = () => {
 
                 weatherVar.set(`${emoji} ${weather.current.temperature_2m}°C`);
             }).catch(e => {
-                console.log(e);
+                console.warn(e);
             })
         }).catch(e => {
-            console.log(e);
+            console.warn(e);
         })
     }
 
