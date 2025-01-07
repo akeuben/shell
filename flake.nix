@@ -36,6 +36,7 @@
                     ags.packages.${system}.notifd
                     ags.packages.${system}.mpris
                     pkgs.evolution-data-server
+                    pkgs.nodejs
                 ];
 
             };
@@ -48,6 +49,7 @@
                     ags.packages.${system}.agsFull
                     pkgs.gobject-introspection
                     pkgs.evolution-data-server
+                    pkgs.nodejs
                 ];
                 propogatedUserEnvPkgs = [
                     pkgs.evolution-data-server

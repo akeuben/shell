@@ -5,8 +5,10 @@ import ControlCenter from "./window/ControlCenter"
 import NetworkAuth from "./window/NetworkAuth"
 import { updateNetworkAuthRequest, updateNetworkAuthResponse } from "./widget/network_auth/Auth"
 import Calendar from "./window/Calendar"
+import Runner from "./window/Runner"
+import AstalHyprland from "gi://AstalHyprland?version=0.1"
 
-const Windows = [ControlCenter, Calendar, Bar, NetworkAuth]
+const Windows = [ControlCenter, Calendar, Bar, Runner, NetworkAuth]
 
 App.start({
     css: style,
@@ -23,8 +25,13 @@ App.start({
                 case "network-auth": {
                     updateNetworkAuthRequest(request.ssid);
                     updateNetworkAuthResponse(res);
-                    App.get_window(`network-auth-${request.monitor}`)?.set_visible(true);
+                    const monitor = request.monitor || AstalHyprland.get_default().get_focused_monitor().id;
+                    App.get_window(`network-auth-${monitor}`)?.set_visible(true);
                     break;
+                }
+                case "runner": {
+                    const monitor = request.monitor || AstalHyprland.get_default().get_focused_monitor().id;
+                    App.get_window(`runner-${monitor}`)?.show();
                 }
                 default: {
                     res("invalid request type");
