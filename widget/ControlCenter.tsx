@@ -11,6 +11,7 @@ import Gtk30 from "gi://Gtk";
 import AstalNetwork from "gi://AstalNetwork?version=0.1";
 import { NetworkPageWidget } from "./control_center/Network";
 import { PlaybackWidget } from "./control_center/Music";
+import Pango from "gi://Pango?version=1.0";
 
 const SPACING = 10;
 
@@ -59,7 +60,7 @@ const Main = ({onBluetoothClicked, onNetworkClicked}: {onBluetoothClicked: () =>
         </ControlCenterRow>
         <VolumeSlider />
         <PlaybackWidget />
-        <label css="opacity: 0.5" label={motd()} />
+        <label css="opacity: 0.5" label={motd()} wrapMode={Pango.WrapMode.WORD} wrap={true} justify={Gtk.Justification.CENTER}/>
     </box>
 }
 
