@@ -35,6 +35,7 @@
                     ags.packages.${system}.wireplumber
                     ags.packages.${system}.notifd
                     ags.packages.${system}.mpris
+                    ags.packages.${system}.battery
                     pkgs.evolution-data-server
                     pkgs.nodejs
                 ];
