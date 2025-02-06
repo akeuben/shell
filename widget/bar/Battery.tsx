@@ -10,6 +10,6 @@ export const BatteryWidget = () => {
 
     return <box className="bar-section accent-background" spacing={10}>
         <icon icon={bind(battery, "icon_name")} />
-        <label label={bind(battery, "percentage").as(p => `${p * 100}%`)} />
+        <label label={bind(battery, "percentage").as(p => `${Math.round(p * 100)}%`)} />
     </box>
 }
