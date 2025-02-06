@@ -41,3 +41,10 @@ button {
     border-top-right-radius: 20px;
     border-bottom-right-radius: 20px;
 }
+
+.accent-background {
+    background-color: $accent-color;
+    & * {
+      color: $window_bg_color;
+    }
+}

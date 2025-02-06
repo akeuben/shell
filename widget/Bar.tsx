@@ -4,6 +4,7 @@ import { ClientsWidget, WorkspacesWidget } from "./bar/Hyprland"
 import { TimeWidget } from "./bar/Time"
 import { WeatherWidget } from "./bar/Weather"
 import { SystemTrayWidget } from "./bar/SystemTray"
+import { BatteryWidget } from "./bar/Battery"
 
 const BarArea = ({child, children, align}: {child?: JSX.Element, children?: JSX.Element[], align: Gtk.Align}) => {
     return <box 
@@ -28,6 +29,7 @@ export default function BarWidget({monitor}: {monitor: Gdk.Monitor}) {
         <BarArea align={Gtk.Align.END}>
             <WeatherWidget />
             <SystemTrayWidget monitor={monitor}/>
+            <BatteryWidget />
         </BarArea>
     </centerbox>
 }
