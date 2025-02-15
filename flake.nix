@@ -19,11 +19,11 @@
     pkgs = nixpkgs.legacyPackages.${system};
     in {
         packages.${system} = {
-            default = ags.lib.bundle {
+            desktop = ags.lib.bundle {
                 inherit pkgs;
                 src = ./.;
-                name = "kappashell";
-                entry = "app.ts";
+                name = "kappashell-desktop";
+                entry = "desktop/app.ts";
 
                 # additional libraries and executables to add to gjs' runtime
                 extraPackages = [
@@ -36,6 +36,30 @@
                     ags.packages.${system}.notifd
                     ags.packages.${system}.mpris
                     ags.packages.${system}.battery
+                    ags.packages.${system}.greet
+                    pkgs.evolution-data-server
+                    pkgs.nodejs
+                ];
+
+            };
+            greeter = ags.lib.bundle {
+                inherit pkgs;
+                src = ./.;
+                name = "kappashell-greeter";
+                entry = "greeter/app.ts";
+
+                # additional libraries and executables to add to gjs' runtime
+                extraPackages = [
+                    ags.packages.${system}.hyprland
+                    ags.packages.${system}.apps
+                    ags.packages.${system}.tray
+                    ags.packages.${system}.network
+                    ags.packages.${system}.bluetooth
+                    ags.packages.${system}.wireplumber
+                    ags.packages.${system}.notifd
+                    ags.packages.${system}.mpris
+                    ags.packages.${system}.battery
+                    ags.packages.${system}.greet
                     pkgs.evolution-data-server
                     pkgs.nodejs
                 ];
