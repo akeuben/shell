@@ -2,9 +2,9 @@ import Gtk from "gi://Gtk?version=3.0"
 import Gdk from "gi://Gdk?version=3.0"
 import { ClientsWidget, WorkspacesWidget } from "./bar/Hyprland"
 import { TimeWidget } from "./bar/Time"
-import { WeatherWidget } from "./bar/Weather"
 import { SystemTrayWidget } from "./bar/SystemTray"
 import { BatteryWidget } from "./bar/Battery"
+import { QuickActionWidget } from "./bar/QuickAction"
 
 const BarArea = ({child, children, align}: {child?: JSX.Element, children?: JSX.Element[], align: Gtk.Align}) => {
     return <box 
@@ -36,7 +36,7 @@ export default function BarWidget({monitor, disabledWidgets}: {monitor: Gdk.Moni
         {disabledWidgets.time ? <></> : <TimeWidget monitor={monitor} />}
         </BarArea>
         <BarArea align={Gtk.Align.END}>
-            {disabledWidgets.weather ? <></> : <WeatherWidget />}
+            {disabledWidgets.weather ? <></> : <QuickActionWidget />}
             {disabledWidgets.tray ? <></> : <SystemTrayWidget monitor={monitor}/>}
             {disabledWidgets.battery ? <></> : <BatteryWidget />}
         </BarArea>

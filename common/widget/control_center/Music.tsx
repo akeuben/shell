@@ -2,16 +2,7 @@ import AstalMpris from "gi://AstalMpris?version=0.1"
 import { bind } from "astal/binding";
 import { Astal, Gtk } from "astal/gtk3";
 import Variable from "astal/variable";
-
-const get_playback_icon = (status: AstalMpris.PlaybackStatus) => {
-    switch(status) {
-        case AstalMpris.PlaybackStatus.STOPPED: 
-        case AstalMpris.PlaybackStatus.PAUSED: 
-            return "media-playback-start-symbolic";
-        case AstalMpris.PlaybackStatus.PLAYING:
-            return "media-playback-pause-symbolic";
-    }
-}
+import { get_playback_icon } from "../../utils/icons";
 
 const PlayerPlayback = ({player, name}: {player: AstalMpris.Player, name: string}) => {
 

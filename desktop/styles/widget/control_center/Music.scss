@@ -1,7 +1,7 @@
 @use "../../colors.scss" as *;
 
 .widget-playback {
-    border-radius: 30px;
+    border-radius: 10px;
 
     & .raise-button {
         background: transparent;
@@ -12,14 +12,14 @@
         background-repeat: no-repeat;
         background-size: cover;
         min-height: 190px;
-        border-radius: 31px;
+        border-radius: 10px;
         transition: background 0.5s linear;
     }
 
     .darken {
         background: linear-gradient(90deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.8) 100%);
         min-height: 190px;
-        border-radius: 30px;
+        border-radius: 10px;
     }
 
     & .app-name {
@@ -51,7 +51,7 @@
         min-height: 55px;
 
         & icon {
-            font-size: 30px;
+            font-size: 20px;
             color: $window_bg_color;
         }
 

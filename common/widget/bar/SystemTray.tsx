@@ -41,17 +41,9 @@ const StatusBar = ({monitor}: {monitor: Gdk.Monitor}) => {
 }
 
 const ApplicationEntry = ({entry}: {entry: Tray.TrayItem}) => {
-    let menu = entry.create_menu();
-
-    return <button cursor="pointer" className={`bar-section-part`} onClickRelease={(button, event) => {
-        if(event.button === Astal.MouseButton.PRIMARY) {
-            entry.activate(event.x, event.y);
-        } else if(event.button === Astal.MouseButton.SECONDARY) {
-            menu?.popup_at_widget(button, Gdk.Gravity.NORTH, Gdk.Gravity.SOUTH, null);
-        }
-    }}>
+    return <menubutton cursor="pointer" className={`bar-section-part`} menuModel={bind(entry, "menu_model")} actionGroup={bind(entry, "action_group").as(ag => ["dbusmenu", ag])} usePopover={false}>
         <icon gicon={bind(entry, "gicon")} pixbuf={bind(entry, "icon_pixbuf").as(pixbuf => pixbuf ? pixbuf : undefined)} />
-    </button>
+    </menubutton>
 }
 
 const NotificationTray = () => {

@@ -89,7 +89,7 @@ export const MonthWidget = () => {
     const selected_date = new Variable(time.get());
 
     const seven = [0, 1, 2, 3, 4, 5, 6];
-    const four = [1,2,3,4];
+    const four = [1,2,3,4,5];
 
     return <box orientation={Gtk.Orientation.VERTICAL} className="calendar">
         <centerbox>

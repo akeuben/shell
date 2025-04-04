@@ -13,9 +13,9 @@
 .notification-badge-area {
     background-color: #ffffff11;
     min-width: 45px;
-    border-radius: 5px;
-    border-top-left-radius: 20px;
-    border-bottom-left-radius: 20px;
+    border-radius: 2px;
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
 }
 
 .bar-section-part.last.active {
@@ -24,4 +24,13 @@
 
 .bar-section-part.last.active * {
   color: $window_bg_color;
+}
+
+.background {
+    min-height: 20px;
+    min-width: 20px;
+    background-position: center center;
+    background-size: cover;
+    border-radius: 20px 20px;
+    margin-right: 10px;
 }

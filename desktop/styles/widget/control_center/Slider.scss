@@ -2,7 +2,7 @@
 .widget-slider {
   button {
     min-width: 50px;
-    border-radius: 30px;
+    border-radius: 10px;
   }
   button:hover {
     background: transparent;
@@ -25,12 +25,12 @@
 
   scale trough {
     background: transparent;
-    border-radius: 30px;
+    border-radius: 10px;
   }
 
   scale highlight {
     min-height: 50px;
-    border-radius: 30px;
+    border-radius: 10px;
     min-width: 50px;
     background-color: $accent-color;
   }
