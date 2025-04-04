@@ -5,7 +5,7 @@ import Variable from "astal/variable"
 
 export const RunnerWidget = ({monitor}: {monitor: Gdk.Monitor}) => {
     const searchTerm = new Variable("");
-    return <box orientation={Gtk.Orientation.VERTICAL} spacing={3} width_request={750} setup={(s) => {
+    return <box className="runner" orientation={Gtk.Orientation.VERTICAL} spacing={3} width_request={750} setup={(s) => {
         s.connect("realize", () => {
             const window = App.get_window(`runner-${App.get_monitors().indexOf(monitor)}`);
             if(!window) return;
