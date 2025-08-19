@@ -1,48 +1,93 @@
 // https://gitlab.gnome.org/GNOME/gtk/-/blob/gtk-3-24/gtk/theme/Adwaita/_colors-public.scss
-@use "styles/colors.scss" as *;
-@use "styles/widget/Bar.scss";
-@use "styles/widget/Calendar.scss";
-@use "styles/widget/ControlCenter.scss";
-@use "styles/widget/Runner.scss";
+$fg-color: #{"@theme_fg_color"};
+$bg-color: #{"@theme_bg_color"};
+$accent-color: #{"@accent_color"};
+$base-color: shade(#{$bg_color}, 1.4);
+$subbase-color: shade(#{$bg_color}, 1.8);
 
-* {
-  font-size: 14px;
-  border: none;
-  box-shadow: none;
-  text-shadow: none;
+window.Bar {
+  background: transparent;
+  color: $fg-color;
+  font-weight: bold;
 }
 
-icon {
-  font-size: 16px;
+.bar {
+  background-color: $bg-color;
 }
 
-label, icon, spinner {
-  color: $window_fg_color;
-  opacity: 1;
+.bar.left {
+  padding: 15px 5px;
+}
+
+.bar-section {
+    background: $base-color;
+  padding: 15px 5px;
+  border-radius: 500px;
+}
+
+button {
+  background: transparent;
+  border-radius: 500px;
+  >image {
+    transform: scale(1.0);
+    transition: transform 0.125s ease-in-out;
+    filter: brightness(1);
+  }
 }
 
 button:hover {
-  background: $sidebar_bg_color;
+  background: $base-color;
+
+  >image {
+    transform: scale(1.2);
+    filter: brightness(2);
+  }
 }
 
-scrollable {
-  outline: none;
-  border: none;
+.clock {
+  font-size: 12pt;
+  font-weight: 900;
+  color: $accent-color;
 }
 
-scrollable>* {
-  outline: none;
-  border: none;
+.tray-item {
+  padding: 0px;
+  margin: 0px;
+
+  :hover {
+    filter: brightness(1.5);
+  }
 }
 
-.cover {
-  background: gtkalpha($window_bg_color, 0.3);
+.workspaces {
+    background: $base-color;
+    padding: 20px 10px;
+    border-radius: 500px;
 }
 
-.title {
-    font-weight: 700;
+.workspace-indicator {
+    border-radius: 500px;
+    background-color: $subbase-color;
+    transition: min-height 0.125s ease-in-out;
+    min-height: 10px;
+    min-width: 10px;
 }
 
-.description {
-    font-weight: 300;
+.workspace-indicator.active {
+    background-color: $accent-color;
+    min-height: 20px;
+}
+
+.workspace-indicator.special {
+    background-color: orange;
+}
+
+.client {
+  padding: 10px;
+  margin: 0px 0px;
+  border-radius: 0px;
+
+  :hover {
+    filter: brightness(1.5);
+  }
 }
