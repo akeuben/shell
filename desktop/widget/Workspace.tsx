@@ -32,6 +32,7 @@ export const WorkspaceIndicator = ({gdkmonitor}: {gdkmonitor: Gdk.Monitor}) => {
                 <Gtk.GestureClick 
                     button={Gdk.BUTTON_PRIMARY}
                     onPressed={() => {
+                        workspace.move_to(monitor);
                         workspace.focus();
                     }}
                 />

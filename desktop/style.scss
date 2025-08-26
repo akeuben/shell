@@ -23,6 +23,10 @@ window.Bar {
     background: $base-color;
   padding: 15px 5px;
   border-radius: 500px;
+
+  button:hover {
+    background: $subbase-color;
+  }
 }
 
 button {
@@ -40,7 +44,6 @@ button:hover {
 
   >image {
     transform: scale(1.2);
-    filter: brightness(2);
   }
 }
 
@@ -85,9 +88,4 @@ button:hover {
 .client {
   padding: 10px;
   margin: 0px 0px;
-  border-radius: 0px;
-
-  :hover {
-    filter: brightness(1.5);
-  }
 }
