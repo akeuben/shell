@@ -1,7 +1,7 @@
-import { execAsync } from "astal/process";
-import { RunnerAction, RunnerSource } from "../../types/runner_sources/source";
 // @ts-ignore
+import { execAsync } from "ags/process";
 import * as math from "../math.js";
+import { RunnerAction, RunnerSource } from "../../types/runner_sources/source.js";
 
 const search = (search_term: string) => {
     const evaluation = math.evaluate(search_term);

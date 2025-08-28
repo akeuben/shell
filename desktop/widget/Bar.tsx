@@ -9,7 +9,7 @@ import { Clock, SystemTray } from "./Tray"
 import { WorkspaceIndicator } from "./Workspace"
 import { ActiveClient, ClientList } from "./Clients"
 import { InvertedCorner } from "./InvertedCorner"
-import { powerMenuOpen } from "./GlobalState"
+import { BottomMenuType, setBottomMenu } from "./GlobalState"
 
 const LEFT_BAR_SIZE = 52;
 
@@ -35,11 +35,17 @@ export function Left(gdkmonitor: Gdk.Monitor) {
                 <SystemTray />
                 <Clock />
                 <box class="bar-section" orientation={Gtk.Orientation.VERTICAL} spacing={10}>
-                    <NetworkIcon />
-                    <BluetoothIcon />
-                </box>
-                <button cursor={Gdk.Cursor.new_from_name("pointer", null)} onClicked={() => powerMenuOpen[1](p => !p)} hexpand={false} vexpand={false}>
-                    <image icon_name="system-shutdown-symbolic" pixel_size={24} />
+                        <NetworkIcon />
+                        <BluetoothIcon />
+                    </box>
+                    <button cursor={Gdk.Cursor.new_from_name("pointer", null)} onClicked={() => setBottomMenu(m => {
+                        if(m === BottomMenuType.POWER_MENU) {
+                            return BottomMenuType.NONE;
+                        }
+                        return BottomMenuType.POWER_MENU;
+                    })
+                    } hexpand={false} vexpand={false}>
+                        <image icon_name="system-shutdown-symbolic" pixel_size={24} />
                 </button>
             </box>
         </centerbox>

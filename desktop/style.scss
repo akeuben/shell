@@ -101,3 +101,15 @@ button:hover {
 .bottom-menu-content.open {
   border-radius: 16px 16px 0px 0px;
 }
+
+.runner-result {
+  margin: 8px;
+}
+
+.runner-result.selected {
+  outline: 2px solid $accent-color;
+}
+
+entry {
+    padding: 8px 16px;
+}

@@ -1,3 +1,9 @@
 import { createState } from "gnim";
 
-export const powerMenuOpen = createState(false);
+export enum BottomMenuType {
+    NONE,
+    POWER_MENU,
+    RUNNER,
+}
+
+export const [bottomMenu, setBottomMenu] = createState<BottomMenuType>(BottomMenuType.NONE);
