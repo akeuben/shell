@@ -75,7 +75,7 @@ export const PowerMenu = (gdkmonitor: Gdk.Monitor) => {
     const open = bottomMenu.as(m => m === BottomMenuType.POWER_MENU);
 
     return <BottomMenu gdkmonitor={gdkmonitor} name="powermenu" revealed={open} close={() => setBottomMenu(BottomMenuType.NONE)}>
-        <IconButton icon_name="system-shutdown-symbolic" onClicked={systemctl("shutdown")} pixel_size={32} />
+        <IconButton icon_name="system-shutdown-symbolic" onClicked={systemctl("poweroff")} pixel_size={32} />
         <IconButton icon_name="system-reboot-symbolic" onClicked={systemctl("reboot")} pixel_size={32} />
         <IconButton icon_name="system-hibernate-symbolic" onClicked={systemctl("sleep")} pixel_size={32} />
         <IconButton icon_name="exit-symbolic" onClicked={exec.bind(null, "hyprctl dispatch exit")} pixel_size={32} />
