@@ -1,96 +1,17 @@
 import app from "ags/gtk4/app"
 import { Astal, Gtk, Gdk } from "ags/gtk4"
-import Gsk from "gi://Gsk?version=4.0"
-import { property, register } from "gnim/gobject"
 import Cairo10 from "gi://cairo"
 import giCairo from "cairo"
-import { Accessor, createState } from "gnim"
+import { Accessor } from "gnim"
 const { TOP, LEFT, RIGHT, BOTTOM} = Astal.WindowAnchor
 import { BluetoothIcon, NetworkIcon } from "./Indicator";
 import { Clock, SystemTray } from "./Tray"
 import { WorkspaceIndicator } from "./Workspace"
 import { ActiveClient, ClientList } from "./Clients"
+import { InvertedCorner } from "./InvertedCorner"
+import { powerMenuOpen } from "./GlobalState"
 
 const LEFT_BAR_SIZE = 52;
-
-type InvertedCornerProps = {class: string, radius: number, corner: "top-left" | "top-right" | "bottom-left" | "bottom-right"};
-
-// Register the widget so it has a proper GType
-@register()
-class InvertedCornerWidget extends Gtk.DrawingArea {
-    @property(String)
-    private class: string;
-
-    @property(Number)
-    private radius: number;
-
-    @property(String)
-    private corner: string;
-
-    constructor(props: InvertedCornerProps) {
-        super();
-        this.class = props.class;
-        this.radius = props.radius;
-        this.corner = props.corner;
-
-        this.add_css_class(this.class);
-    }
-
-    vfunc_snapshot(snapshot: Gtk.Snapshot) {
-        const r = this.radius;
-
-        const builder = Gsk.PathBuilder.new();
-
-        const color = this.get_color();
-        
-        switch (this.corner) {
-            case "top-left":
-                builder.move_to(r, 0);
-                builder.line_to(0, 0);
-                builder.line_to(0, r);
-                builder.arc_to(0, 0, r, 0);
-                break;
-            case "top-right":
-                builder.move_to(r, r);
-                builder.line_to(r, 0);
-                builder.line_to(0, 0);
-                builder.arc_to(r, 0, r, r);
-                break;
-            case "bottom-right":
-                builder.move_to(0, r);
-                builder.line_to(r, r);
-                builder.line_to(r, 0);
-                builder.arc_to(r, r, 0, r);
-                break;
-            case "bottom-left":
-                builder.move_to(r, r);
-                builder.line_to(0, r);
-                builder.line_to(0, 0);
-                builder.arc_to(0, r, r, r);
-                break;
-        }
-
-        const style = this.get_style_context()
-
-        const path = builder.to_path();
-        builder.close();
-
-        snapshot.push_fill(path, Gsk.FillRule.WINDING);
-        snapshot.render_background(style, 0, 0, r, r);
-        snapshot.pop();
-    }
-}
-
-// JSX wrapper function for Astal
-export function InvertedCorner(props: InvertedCornerProps) {
-    const box = new InvertedCornerWidget(props);
-
-    const {radius} = props;
-    
-    return <box width_request={radius} height_request={radius}>
-        {box}
-    </box>
-}
 
 export function Left(gdkmonitor: Gdk.Monitor) {
   return (
@@ -109,7 +30,7 @@ export function Left(gdkmonitor: Gdk.Monitor) {
                 <WorkspaceIndicator gdkmonitor={gdkmonitor} />
                 <ClientList gdkmonitor={gdkmonitor} />
             </box>
-            <ActiveClient $type="center" gdkmonitor={gdkmonitor}/>
+            <ActiveClient $type="center"/>
             <box $type="end" orientation={Gtk.Orientation.VERTICAL} spacing={10}>
                 <SystemTray />
                 <Clock />
@@ -117,7 +38,7 @@ export function Left(gdkmonitor: Gdk.Monitor) {
                     <NetworkIcon />
                     <BluetoothIcon />
                 </box>
-                <button cursor={Gdk.Cursor.new_from_name("pointer", null)} onClicked={console.log.bind(null, "Click!")} hexpand={false} vexpand={false}>
+                <button cursor={Gdk.Cursor.new_from_name("pointer", null)} onClicked={() => powerMenuOpen[1](p => !p)} hexpand={false} vexpand={false}>
                     <image icon_name="system-shutdown-symbolic" pixel_size={24} />
                 </button>
             </box>

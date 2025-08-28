@@ -9,6 +9,7 @@ import { pointer } from "../util/cursor";
 const hyprland = AstalHyprland.get_default();
 
 const fixup_icons = (initial_class: string): string => {
+    if(!initial_class) return "window-symbolic";
     if(initial_class === "zen") return "zen-browser";
     if(initial_class.toLowerCase().includes("minecraft")) return "minecraft";
 
