@@ -1,5 +1,6 @@
 import AstalApps from "gi://AstalApps?version=0.1";
 import { RunnerAction, RunnerSource } from "../../types/runner_sources/source";
+import { execAsync } from "ags/process";
 
 const apps = new AstalApps.Apps({
     name_multiplier: 2,
@@ -17,7 +18,7 @@ const search = (search_term: string) => {
             description: application.description,
             icon: application.icon_name,
             type: "item",
-            action: () => application.launch()
+            action: () => execAsync(`bash -c "(${application.executable} &)"`),
         }
         results.push(result)
     }

@@ -2,17 +2,15 @@ import { Astal, Gdk, Gtk } from "ags/gtk4";
 import app from "ags/gtk4/app";
 import { animateRadius, InvertedCorner } from "./InvertedCorner";
 import { IconButton } from "./IconButton";
-import { Accessor, createBinding, createComputed, createState, For, With } from "gnim";
+import { Accessor, createBinding, createComputed, createState, For } from "gnim";
 import { exec } from "ags/process";
-import { BaseResponse, RequestHandler, RunnerRequest } from "../util/requests";
+import { BaseResponse, lockRequest, RequestHandler, RunnerRequest, unlockRequest } from "../util/requests";
 import { bottomMenu, BottomMenuType, setBottomMenu } from "./GlobalState";
-import GLib from "gi://GLib?version=2.0";
 import AstalHyprland from "gi://AstalHyprland?version=0.1";
-import AstalApps from "gi://AstalApps?version=0.1";
 import { RunnerSettings } from "../util/runner";
 import { RunnerAction } from "../types/runner_sources/source";
 
-const { BOTTOM} = Astal.WindowAnchor
+const { BOTTOM, TOP, LEFT, RIGHT } = Astal.WindowAnchor
 
 const hyprland = AstalHyprland.get_default();
 
@@ -24,6 +22,8 @@ export const BottomMenu = ({children, gdkmonitor, name, revealed, close}: {child
     const [visible, setVisible] = createState(false);
 
     open.subscribe(() => {
+        lockRequest("runner");
+
         if(open.get()) {
             setVisible(true);
         } else {
@@ -31,6 +31,10 @@ export const BottomMenu = ({children, gdkmonitor, name, revealed, close}: {child
                 setVisible(false);
             }, 100)
         }
+
+        setTimeout(() => {
+            unlockRequest("runner");
+        }, 300)
     })
     
     const [radius, setRadius] = createState(0);
@@ -42,28 +46,36 @@ export const BottomMenu = ({children, gdkmonitor, name, revealed, close}: {child
         gdkmonitor={gdkmonitor}
         exclusivity={Astal.Exclusivity.IGNORE}
         keymode={Astal.Keymode.ON_DEMAND}
-        anchor={BOTTOM }
-        default_height={-1}
+        anchor={BOTTOM | TOP | LEFT | RIGHT}
         application={app}
         focusable
         margin_bottom={5}
+        layer={Astal.Layer.OVERLAY}
         namespace={`shell:${name}`}
     >
-        <centerbox>
-            <InvertedCorner $type="start" class="bar" radius={radius} corner="bottom-right" valign={Gtk.Align.END}/>
-            <Gtk.Revealer $type="center" revealChild={open} transition_type={Gtk.RevealerTransitionType.SLIDE_UP} transition_duration={100} onNotifyRevealChild={(e) => {
-                if(e.reveal_child) {
-                    animateRadius(e, setRadius, 0, 16, 100);
-                } else {
-                    animateRadius(e, setRadius, 16, 0, 100);
-                }
-            }}>
-                <box class={open.as(open => `bar bottom-menu-content ${open ? "open" : ""}`)}>
-                    {children}
-                </box>
-            </Gtk.Revealer>
-            <InvertedCorner $type="end" class="bar" radius={radius} corner="bottom-left"  valign={Gtk.Align.END}/>
-        </centerbox>
+        <box hexpand={true} vexpand={true} css="background: #00000044" $={(e) => {
+            const gesture = new Gtk.GestureClick();
+            gesture.connect("released", () => {
+                close();
+            })
+            e.add_controller(gesture);
+        }}>
+            <centerbox hexpand={true} halign={Gtk.Align.CENTER} valign={Gtk.Align.END}>
+                <InvertedCorner $type="start" class="bar" radius={radius} corner="bottom-right" valign={Gtk.Align.END}/>
+                <Gtk.Revealer $type="center" revealChild={open} transition_type={Gtk.RevealerTransitionType.SLIDE_UP} transition_duration={100} onNotifyRevealChild={(e) => {
+                    if(e.reveal_child) {
+                        animateRadius(e, setRadius, 0, 16, 100);
+                    } else {
+                        animateRadius(e, setRadius, 16, 0, 100);
+                    }
+                }}>
+                    <box class={open.as(open => `bar bottom-menu-content ${open ? "open" : ""}`)}>
+                        {children}
+                    </box>
+                </Gtk.Revealer>
+                <InvertedCorner $type="end" class="bar" radius={radius} corner="bottom-left"  valign={Gtk.Align.END}/>
+            </centerbox>
+        </box>
     </window>
 }
 
@@ -112,7 +124,7 @@ export const handleRunner: RequestHandler<RunnerRequest, {open: boolean}> = asyn
 const RunnerResults = ({results, selected, close}: {results: Accessor<RunnerAction[]>, selected: Accessor<number>, close: () => void}) => {
 
     
-    return <box orientation={Gtk.Orientation.VERTICAL} spacing={16} vexpand={true}>
+    return <box orientation={Gtk.Orientation.VERTICAL} spacing={16} vexpand={false} valign={Gtk.Align.START}>
         <For each={results}>
             {(result, i) => {
                 const s = createComputed([selected, i], (s, i) => s === i);

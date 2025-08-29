@@ -10,7 +10,13 @@ export function animateRadius(widget: Gtk.Widget, setter: (a: number) => void, f
     const start = GLib.get_monotonic_time();
     const diff = to - from;
 
-    widget.add_tick_callback(() => {
+    const old = (widget as any).tick;
+
+    if(old) {
+        widget.remove_tick_callback(old);
+    }
+
+    (widget as any).tick = widget.add_tick_callback(() => {
         const elapsed = (GLib.get_monotonic_time() - start) / 1000; // ms
         const t = Math.min(1, elapsed / duration);
 

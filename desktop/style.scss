@@ -23,6 +23,7 @@ window.Bar {
     background: $base-color;
   padding: 15px 5px;
   border-radius: 500px;
+  box-shadow: inset -2px -2px 10px shade($base-color, 0.5);
 
   button:hover {
     background: $subbase-color;
@@ -66,6 +67,7 @@ button:hover {
     background: $base-color;
     padding: 20px 10px;
     border-radius: 500px;
+    box-shadow: inset -2px -2px 10px shade($base-color, 0.5);
 }
 
 .workspace-indicator {

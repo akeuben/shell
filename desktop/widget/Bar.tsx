@@ -23,6 +23,7 @@ export function Left(gdkmonitor: Gdk.Monitor) {
       exclusivity={Astal.Exclusivity.EXCLUSIVE}
       anchor={TOP | LEFT | BOTTOM }
       application={app}
+      layer={Astal.Layer.TOP}
     >
         <centerbox width_request={LEFT_BAR_SIZE} class="bar left" orientation={Gtk.Orientation.VERTICAL}>
             <box $type="start" orientation={Gtk.Orientation.VERTICAL} spacing={10}>
@@ -63,6 +64,7 @@ export function Right(gdkmonitor: Gdk.Monitor) {
       exclusivity={Astal.Exclusivity.EXCLUSIVE}
       anchor={TOP | RIGHT | BOTTOM }
       application={app}
+      layer={Astal.Layer.TOP}
     >
         <box orientation={Gtk.Orientation.HORIZONTAL}>
             <box width_request={5} class="bar" >
@@ -81,6 +83,7 @@ export function Top(gdkmonitor: Gdk.Monitor) {
         exclusivity={Astal.Exclusivity.IGNORE}
         anchor={TOP | RIGHT | LEFT }
         application={app}
+      layer={Astal.Layer.TOP}
         $={(window) => {
             updateBounds(window, new Gdk.Rectangle({x: 0, y: 0, width: gdkmonitor.geometry.width, height: 5}));
         }}
@@ -107,6 +110,7 @@ export function Bottom(gdkmonitor: Gdk.Monitor) {
         exclusivity={Astal.Exclusivity.IGNORE}
         anchor={BOTTOM | RIGHT | LEFT }
         application={app}
+      layer={Astal.Layer.TOP}
         $={(window) => {
             updateBounds(window, new Gdk.Rectangle({x: 0, y: 0, width: gdkmonitor.geometry.width, height: 5}));
         }}

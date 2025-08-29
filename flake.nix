@@ -81,6 +81,7 @@
                 propogatedUserEnvPkgs = [
                     pkgs.evolution-data-server
                 ];
+                GSK_RENDERER = "ngl";
             };
         };
     };

@@ -11,12 +11,12 @@ const handlers: RequestHandlerRegistry = {
 app.start({
     css: style,
     main() {
+        app.get_monitors().map(PowerMenu)
+        app.get_monitors().map(Runner)
         app.get_monitors().map(Left)
         app.get_monitors().map(Right)
         app.get_monitors().map(Top)
         app.get_monitors().map(Bottom)
-        app.get_monitors().map(PowerMenu)
-        app.get_monitors().map(Runner)
     },
     requestHandler: handleRequest.bind(null, handlers),
 })
