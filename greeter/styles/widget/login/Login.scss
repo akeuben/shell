@@ -1,9 +1,0 @@
-@use "styles/colors.scss" as *;
-.login-dialog {
-    background-color: gtkalpha($window_bg_color, 0.4);
-    padding: 30px 60px;
-
-    &>.title {
-        font-size: 2em;
-    }
-}

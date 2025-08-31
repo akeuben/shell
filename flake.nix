@@ -4,6 +4,11 @@
     inputs = {
         nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
 
+        astal = {
+            url = "github:aylur/astal";
+            inputs.nixpkgs.follows = "nixpkgs";
+        };
+
         ags = {
             url = "github:aylur/ags";
             inputs.nixpkgs.follows = "nixpkgs";
@@ -14,56 +19,52 @@
         self,
         nixpkgs,
         ags,
+        astal
     }: let
-    system = "x86_64-linux";
-    pkgs = nixpkgs.legacyPackages.${system};
+        system = "x86_64-linux";
+        pkgs = nixpkgs.legacyPackages.${system};
     in {
         packages.${system} = {
-            desktop = ags.lib.bundle {
-                inherit pkgs;
-                src = ./.;
+            desktop = let 
                 name = "kappashell-desktop";
-                entry = "desktop/app.ts";
+            in pkgs.stdenv.mkDerivation {
+                name = name;
 
-                # additional libraries and executables to add to gjs' runtime
-                extraPackages = [
-                    ags.packages.${system}.hyprland
-                    ags.packages.${system}.apps
-                    ags.packages.${system}.tray
-                    ags.packages.${system}.network
-                    ags.packages.${system}.bluetooth
-                    ags.packages.${system}.wireplumber
-                    ags.packages.${system}.notifd
-                    ags.packages.${system}.mpris
-                    ags.packages.${system}.battery
-                    ags.packages.${system}.greet
+                src = ./desktop;
+                nativeBuildInputs = with pkgs; [
+                    wrapGAppsHook
+                    gobject-introspection
+                    ags.packages.${system}.default
+                ];
+                buildInputs = [
+                    pkgs.glib 
+                    pkgs.gjs 
+                    astal.packages.${system}.astal4
+                    astal.packages.${system}.hyprland
+                    astal.packages.${system}.apps
+                    astal.packages.${system}.tray
+                    astal.packages.${system}.network
+                    astal.packages.${system}.bluetooth
+                    astal.packages.${system}.wireplumber
+                    astal.packages.${system}.notifd
+                    astal.packages.${system}.mpris
+                    astal.packages.${system}.battery
+                    astal.packages.${system}.greet
                     pkgs.evolution-data-server
                     pkgs.nodejs
                 ];
+                installPhase = ''
+                    mkdir -p $out/bin
+                    ags bundle app.ts $out/bin/${name}
+                '';
 
-            };
-            greeter = ags.lib.bundle {
-                inherit pkgs;
-                src = ./.;
-                name = "kappashell-greeter";
-                entry = "greeter/app.ts";
-
-                # additional libraries and executables to add to gjs' runtime
-                extraPackages = [
-                    ags.packages.${system}.hyprland
-                    ags.packages.${system}.apps
-                    ags.packages.${system}.tray
-                    ags.packages.${system}.network
-                    ags.packages.${system}.bluetooth
-                    ags.packages.${system}.wireplumber
-                    ags.packages.${system}.notifd
-                    ags.packages.${system}.mpris
-                    ags.packages.${system}.battery
-                    ags.packages.${system}.greet
-                    pkgs.evolution-data-server
-                    pkgs.nodejs
-                ];
-
+                preFixup = ''
+                    gappsWrapperArgs+=(
+                    --prefix PATH : ${pkgs.lib.makeBinPath [
+                        pkgs.coreutils
+                    ]}
+                    )
+                '';
             };
         };
 
@@ -79,6 +80,7 @@
                 propogatedUserEnvPkgs = [
                     pkgs.evolution-data-server
                 ];
+                GSK_RENDERER = "ngl";
             };
         };
     };
