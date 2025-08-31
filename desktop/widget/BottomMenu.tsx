@@ -173,6 +173,7 @@ export const Runner = (gdkmonitor: Gdk.Monitor) => {
                 controller.set_propagation_phase(Gtk.PropagationPhase.CAPTURE);
                 controller.connect("key-released", (_controller, key, _keycode, _state) => {
                     if([Gdk.KEY_Return, Gdk.KEY_KP_Enter].includes(key)) {
+                        if(results.get().length === 0) return;
                         results.get()[selected.get()].action();
                         close();
                         return Gdk.EVENT_STOP;

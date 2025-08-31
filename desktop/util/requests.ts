@@ -17,28 +17,29 @@ export type RequestHandlerRegistry = Record<string, RequestHandler<BaseRequest<a
 
 const lockedRequests: string[] = [];
 
-export const handleRequest = (handlers: RequestHandlerRegistry, request: string, response: (res: BaseResponse<any>) => void) => {
-    const requestObject = JSON.parse(request) as BaseRequest<string>;
+const fail = (error: string) => {
+    return JSON.stringify({
+        "type": "failure",
+        "message": error
+    })
+}
+
+export const handleRequest = (handlers: RequestHandlerRegistry, request: string[], response: (res: string) => void) => {
+    const requestObject = JSON.parse(request.join(" ")) as BaseRequest<string>;
 
     const handler = handlers[requestObject.type];
 
     if(!handler) {
-        response({
-            "type": "failure",
-            "message": "Unknown request type",
-        });
+        response(fail("Unknown request type"));
         return;
     };
 
     if(lockedRequests.includes(requestObject.type)) {
-        response({
-            "type": "failure",
-            "message": "Request type is currently locked",
-        });
+        response(fail("Request type is currently locked"));
         return;
     }
 
-    handler(requestObject).then(response)
+    handler(requestObject).then((r) => response(JSON.stringify(r)))
 }
 
 export const lockRequest = (requestType: string) => {

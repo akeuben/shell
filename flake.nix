@@ -39,7 +39,6 @@
                 buildInputs = [
                     pkgs.glib 
                     pkgs.gjs 
-                    astal.packages.${system}.io
                     astal.packages.${system}.astal4
                     astal.packages.${system}.hyprland
                     astal.packages.${system}.apps
