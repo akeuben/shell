@@ -7,3 +7,4 @@ export enum BottomMenuType {
 }
 
 export const [bottomMenu, setBottomMenu] = createState<BottomMenuType>(BottomMenuType.NONE);
+export const [topMenuOpen, setTopMenuOpen] = createState(false);

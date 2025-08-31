@@ -100,6 +100,7 @@ class RotatedLabel extends Gtk.Label {
 const MAX_TITLE_LENGTH = 20;
 
 const title_modifier = (title: string) => {
+    if(!title) return "Window";
     if(title.length > MAX_TITLE_LENGTH) {
         title = title.substring(0, MAX_TITLE_LENGTH - 3) + "...";
     }

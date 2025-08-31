@@ -4,7 +4,7 @@ import { animateRadius, InvertedCorner } from "./InvertedCorner";
 import { IconButton } from "./IconButton";
 import { Accessor, createBinding, createComputed, createState, For } from "gnim";
 import { exec } from "ags/process";
-import { BaseResponse, lockRequest, RequestHandler, RunnerRequest, unlockRequest } from "../util/requests";
+import { BaseResponse, RequestHandler, RunnerRequest} from "../util/requests";
 import { bottomMenu, BottomMenuType, setBottomMenu } from "./GlobalState";
 import AstalHyprland from "gi://AstalHyprland?version=0.1";
 import { RunnerSettings } from "../util/runner";
@@ -22,7 +22,6 @@ export const BottomMenu = ({children, gdkmonitor, name, revealed, close}: {child
     const [visible, setVisible] = createState(false);
 
     open.subscribe(() => {
-        lockRequest("runner");
 
         if(open.get()) {
             setVisible(true);
@@ -31,10 +30,6 @@ export const BottomMenu = ({children, gdkmonitor, name, revealed, close}: {child
                 setVisible(false);
             }, 100)
         }
-
-        setTimeout(() => {
-            unlockRequest("runner");
-        }, 300)
     })
     
     const [radius, setRadius] = createState(0);
@@ -50,10 +45,9 @@ export const BottomMenu = ({children, gdkmonitor, name, revealed, close}: {child
         application={app}
         focusable
         margin_bottom={5}
-        layer={Astal.Layer.OVERLAY}
         namespace={`shell:${name}`}
     >
-        <box hexpand={true} vexpand={true} css="background: #00000044" $={(e) => {
+        <box hexpand={true} vexpand={true} css="background: #00000044;" $={(e) => {
             const gesture = new Gtk.GestureClick();
             gesture.connect("released", () => {
                 close();
@@ -69,7 +63,13 @@ export const BottomMenu = ({children, gdkmonitor, name, revealed, close}: {child
                         animateRadius(e, setRadius, 16, 0, 100);
                     }
                 }}>
-                    <box class={open.as(open => `bar bottom-menu-content ${open ? "open" : ""}`)}>
+                    <box class={open.as(open => `bar bottom-menu-content ${open ? "open" : ""}`)} $={(e) => {
+                        const gesture = new Gtk.GestureClick();
+                        gesture.connect("released", (controller) => {
+                            controller.set_state(Gtk.EventSequenceState.CLAIMED);
+                        })
+                        e.add_controller(gesture);
+                    }}>
                         {children}
                     </box>
                 </Gtk.Revealer>

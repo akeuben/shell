@@ -92,7 +92,7 @@ button:hover {
   margin: 0px 0px;
 }
 
-.bottom-menu-content {
+.bottom-menu-content, .top-menu-content {
     border-radius: 0px;
     padding: 8px;
     padding-bottom: 4px;
@@ -100,8 +100,16 @@ button:hover {
 
 }
 
-.bottom-menu-content.open {
+.bottom-menu-content.open,  {
   border-radius: 16px 16px 0px 0px;
+}
+.top-menu-content.open {
+  border-radius: 0px 0px 16px 16px;
+
+}
+
+.top-menu-content .icon-button {
+    border-radius: 0px;
 }
 
 .runner-result {
@@ -114,4 +122,49 @@ button:hover {
 
 entry {
     padding: 8px 16px;
+}
+
+.top-menu-selected-tab {
+    padding-bottom: 5px;
+    border-radius: 0px;
+    border-bottom: 2px solid $fg-color;
+}
+
+.icon-button>image {
+    color: $fg-color;
+}
+
+.top-menu-header {
+    padding-bottom: 10px;
+    border-bottom: 2px solid $base-color;
+}
+
+.top-subsubmenu-header {
+    border-bottom: 2px solid $base-color;
+}
+
+.top-submenu-selector {
+    padding-right: 10px;
+    border-right: 2px solid $base-color;
+    margin-right: 10px;
+}
+
+.time {
+    font-size: 3rem;
+    color: $accent_color;
+  font-weight: 900;
+}
+
+.second {
+    font-size: 2rem;
+    color: $fg-color;
+  font-weight: 200;
+}
+
+.date {
+    color: $fg-color;
+}
+
+calendar, calendar>header, calendar>grid {
+    border: none;
 }

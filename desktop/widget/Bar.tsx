@@ -9,7 +9,7 @@ import { Clock, SystemTray } from "./Tray"
 import { WorkspaceIndicator } from "./Workspace"
 import { ActiveClient, ClientList } from "./Clients"
 import { InvertedCorner } from "./InvertedCorner"
-import { BottomMenuType, setBottomMenu } from "./GlobalState"
+import { BottomMenuType, setBottomMenu, setTopMenuOpen } from "./GlobalState"
 
 const LEFT_BAR_SIZE = 52;
 
@@ -90,6 +90,14 @@ export function Top(gdkmonitor: Gdk.Monitor) {
     >
         <box orientation={Gtk.Orientation.VERTICAL}>
             <box margin_start={LEFT_BAR_SIZE} height_request={5} class="bar">
+                <box width_request={1000} halign={Gtk.Align.CENTER} hexpand={true} $={(e) => {
+                    const controller = Gtk.GestureClick.new();
+                    controller.connect("released", () => {
+                        setTopMenuOpen(true)
+                        console.log("OPEN");
+                    });
+                    e.add_controller(controller);
+                }}/>
             </box>
             <centerbox orientation={Gtk.Orientation.HORIZONTAL} margin_start={LEFT_BAR_SIZE} margin_end={5}>
                 <InvertedCorner $type="start" class="bar" radius={34} corner="top-left" />

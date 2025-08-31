@@ -4,8 +4,8 @@ import AstalTray from "gi://AstalTray?version=0.1";
 import { createBinding, For, onCleanup } from "gnim";
 
 export const Clock = () => {
-    const hours = createPoll("00", 500, `date +"%H"`);
-    const minutes = createPoll("00", 500, `date +"%M"`);
+    const hours = createPoll("00", 1000, `date +"%H"`);
+    const minutes = createPoll("00", 1000, `date +"%M"`);
 
     return <box orientation={Gtk.Orientation.VERTICAL} class="clock">
         <label label={hours} class="hour" />
