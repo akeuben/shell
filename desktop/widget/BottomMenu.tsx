@@ -44,17 +44,16 @@ export const BottomMenu = ({children, gdkmonitor, name, revealed, close}: {child
         anchor={BOTTOM | TOP | LEFT | RIGHT}
         application={app}
         focusable
-        margin_bottom={5}
         namespace={`shell:${name}`}
     >
-        <box hexpand={true} vexpand={true} css="background: #00000044;" $={(e) => {
+        <box orientation={Gtk.Orientation.VERTICAL} hexpand={true} vexpand={true} css="background: #00000044;" $={(e) => {
             const gesture = new Gtk.GestureClick();
             gesture.connect("released", () => {
                 close();
             })
             e.add_controller(gesture);
         }}>
-            <centerbox hexpand={true} halign={Gtk.Align.CENTER} valign={Gtk.Align.END}>
+            <centerbox vexpand hexpand={true} halign={Gtk.Align.CENTER} valign={Gtk.Align.END}>
                 <InvertedCorner $type="start" class="bar" radius={radius} corner="bottom-right" valign={Gtk.Align.END}/>
                 <Gtk.Revealer $type="center" revealChild={open} transition_type={Gtk.RevealerTransitionType.SLIDE_UP} transition_duration={100} onNotifyRevealChild={(e) => {
                     if(e.reveal_child) {
@@ -75,6 +74,7 @@ export const BottomMenu = ({children, gdkmonitor, name, revealed, close}: {child
                 </Gtk.Revealer>
                 <InvertedCorner $type="end" class="bar" radius={radius} corner="bottom-left"  valign={Gtk.Align.END}/>
             </centerbox>
+            <box hexpand valign={Gtk.Align.END} height_request={5} class="bar-overlay" />
         </box>
     </window>
 }

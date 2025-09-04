@@ -5,7 +5,6 @@ import app from "ags/gtk4/app";
 import { setTopMenuOpen, topMenuOpen } from "./GlobalState";
 import { animateRadius, InvertedCorner } from "./InvertedCorner";
 import { IconButton } from "./IconButton";
-import GLib from "gi://GLib?version=2.0";
 import { createPoll } from "ags/time";
 
 const { BOTTOM, TOP, LEFT, RIGHT } = Astal.WindowAnchor
@@ -43,16 +42,16 @@ export const TopMenu = (gdkmonitor: Gdk.Monitor) => {
         anchor={BOTTOM | TOP | LEFT | RIGHT}
         application={app}
         focusable
-        margin_top={5}
         namespace={`shell:top-menu`}
     >
-        <box hexpand={true} vexpand={true} css="background: #00000044;" $={(e) => {
+        <box orientation={Gtk.Orientation.VERTICAL} hexpand={true} vexpand={true} css="background: #00000044;" $={(e) => {
             const gesture = new Gtk.GestureClick();
             gesture.connect("released", () => {
                 setTopMenuOpen(false);
             })
             e.add_controller(gesture);
         }}>
+            <box hexpand valign={Gtk.Align.START} height_request={5} class="bar-overlay" />
             <centerbox hexpand={true} halign={Gtk.Align.CENTER} valign={Gtk.Align.START}>
                 <InvertedCorner $type="start" class="bar" radius={radius} corner="top-right" valign={Gtk.Align.START}/>
                 <Gtk.Revealer hexpand $type="center" revealChild={open} transition_type={Gtk.RevealerTransitionType.SLIDE_DOWN} transition_duration={100} onNotifyRevealChild={(e) => {

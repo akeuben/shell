@@ -18,7 +18,7 @@ const search = (search_term: string) => {
             description: application.description,
             icon: application.icon_name,
             type: "item",
-            action: () => execAsync(`bash -c "(${application.executable} &)"`),
+            action: () => execAsync(`bash -c "(${application.executable.replaceAll("%U", "")} &)"`),
         }
         results.push(result)
     }
