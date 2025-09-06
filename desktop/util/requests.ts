@@ -10,6 +10,7 @@ export type BaseRequest<T extends string> = {
     type: T
 }
 export type RunnerRequest = BaseRequest<"runner">;
+export type ScreenshotRequest = BaseRequest<"screenshot">;
 
 export type RequestHandler<T extends BaseRequest<string>, P> = (request: T) => Promise<BaseResponse<P>>;
 

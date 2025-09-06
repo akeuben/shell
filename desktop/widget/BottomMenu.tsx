@@ -3,8 +3,8 @@ import app from "ags/gtk4/app";
 import { animateRadius, InvertedCorner } from "./InvertedCorner";
 import { IconButton } from "./IconButton";
 import { Accessor, createBinding, createComputed, createState, For } from "gnim";
-import { exec } from "ags/process";
-import { BaseResponse, RequestHandler, RunnerRequest} from "../util/requests";
+import { exec, execAsync } from "ags/process";
+import { BaseResponse, RequestHandler, RunnerRequest, ScreenshotRequest} from "../util/requests";
 import { bottomMenu, BottomMenuType, setBottomMenu } from "./GlobalState";
 import AstalHyprland from "gi://AstalHyprland?version=0.1";
 import { RunnerSettings } from "../util/runner";
@@ -87,11 +87,31 @@ export const PowerMenu = (gdkmonitor: Gdk.Monitor) => {
     const open = bottomMenu.as(m => m === BottomMenuType.POWER_MENU);
 
     return <BottomMenu gdkmonitor={gdkmonitor} name="powermenu" revealed={open} close={() => setBottomMenu(BottomMenuType.NONE)}>
-        <IconButton icon_name="system-shutdown-symbolic" onClicked={systemctl("poweroff")} pixel_size={32} />
-        <IconButton icon_name="system-reboot-symbolic" onClicked={systemctl("reboot")} pixel_size={32} />
-        <IconButton icon_name="system-hibernate-symbolic" onClicked={systemctl("sleep")} pixel_size={32} />
-        <IconButton icon_name="exit-symbolic" onClicked={exec.bind(null, "hyprctl dispatch exit")} pixel_size={32} />
-        <IconButton icon_name="application-exit-symbolic" onClicked={() => setBottomMenu(BottomMenuType.NONE)} pixel_size={32} />
+        <IconButton icon_name="system-shutdown-symbolic" onClicked={systemctl("poweroff")} pixel_size={32} className="" />
+        <IconButton icon_name="system-reboot-symbolic" onClicked={systemctl("reboot")} pixel_size={32} className="" />
+        <IconButton icon_name="system-hibernate-symbolic" onClicked={systemctl("sleep")} pixel_size={32} className="" />
+        <IconButton icon_name="exit-symbolic" onClicked={exec.bind(null, "hyprctl dispatch exit")} pixel_size={32} className="" />
+        <IconButton icon_name="application-exit-symbolic" onClicked={() => setBottomMenu(BottomMenuType.NONE)} pixel_size={32} className="" />
+    </BottomMenu>
+}
+
+const hyprshot = (cmd: string) => {
+    return () => {
+        setBottomMenu(BottomMenuType.NONE);
+        setTimeout(() => {
+            execAsync(`hyprshot -m ${cmd}`);
+        }, 200);
+    }
+}
+
+export const ScreenshotMenu = (gdkmonitor: Gdk.Monitor) => {
+    const open = bottomMenu.as(m => m === BottomMenuType.SCREENSHOT);
+
+    return <BottomMenu gdkmonitor={gdkmonitor} name="screenshot" revealed={open} close={() => setBottomMenu(BottomMenuType.NONE)}>
+        <IconButton icon_name="screenshot-app-symbolic" onClicked={hyprshot("region")} pixel_size={32} className="" />
+        <IconButton icon_name="screenshot-area-symbolic" onClicked={hyprshot("window")} pixel_size={32} className="" />
+        <IconButton icon_name="screenshot-fullscreen-symbolic" onClicked={hyprshot("output")} pixel_size={32} className="" />
+        <IconButton icon_name="application-exit-symbolic" onClicked={() => setBottomMenu(BottomMenuType.NONE)} pixel_size={32} className="" />
     </BottomMenu>
 }
 
@@ -120,6 +140,33 @@ export const handleRunner: RequestHandler<RunnerRequest, {open: boolean}> = asyn
     return result;
     
 }
+
+export const handleScreenshot: RequestHandler<ScreenshotRequest, {open: boolean}> = async (_) => {
+    const result = new Promise<BaseResponse<{open: boolean}>>((resolve) => {
+        setBottomMenu(m => {
+            if(m === BottomMenuType.SCREENSHOT) {
+                resolve({
+                    type: "success",
+                    payload: {
+                        open: false
+                    }
+                })
+                return BottomMenuType.NONE;
+            }
+            resolve({
+                type: "success",
+                payload: {
+                    open: true
+                }
+            })
+            return BottomMenuType.SCREENSHOT;
+        })
+    });   
+
+    return result;
+    
+}
+
 
 const RunnerResults = ({results, selected, close}: {results: Accessor<RunnerAction[]>, selected: Accessor<number>, close: () => void}) => {
 

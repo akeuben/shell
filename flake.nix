@@ -62,6 +62,7 @@
                     gappsWrapperArgs+=(
                     --prefix PATH : ${pkgs.lib.makeBinPath [
                         pkgs.coreutils
+                        pkgs.hyprshot
                     ]}
                     )
                 '';
