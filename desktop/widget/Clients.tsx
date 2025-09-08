@@ -20,7 +20,7 @@ export const ClientWidget = ({client, workspace}: {client: AstalHyprland.Client,
     const clientWorkspace = createBinding(client, "workspace");
     const focusedClient = createBinding(hyprland, "focused_client");
     
-    const isOnCorrectWorkspace = createComputed([clientWorkspace, workspace, focusedClient], (clientWorkspace, workspace, focusedClient) => clientWorkspace.name === workspace.name && (!focusedClient || focusedClient.pid !== client.pid));
+    const isOnCorrectWorkspace = createComputed([clientWorkspace, workspace, focusedClient], (clientWorkspace, workspace, focusedClient) => workspace && clientWorkspace.name === workspace.name && (!focusedClient || focusedClient.pid !== client.pid));
     
     return <Astal.Bin> 
         <With value={isOnCorrectWorkspace}>

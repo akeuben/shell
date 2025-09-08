@@ -4,6 +4,7 @@ export enum BottomMenuType {
     NONE,
     POWER_MENU,
     RUNNER,
+    SCREENSHOT,
 }
 
 export const [bottomMenu, setBottomMenu] = createState<BottomMenuType>(BottomMenuType.NONE);

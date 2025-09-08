@@ -2,13 +2,14 @@ import { Astal, Gdk, Gtk } from "ags/gtk4";
 import app from "ags/gtk4/app";
 import { animateRadius, InvertedCorner } from "./InvertedCorner";
 import { IconButton } from "./IconButton";
-import { Accessor, createBinding, createComputed, createState, For } from "gnim";
-import { exec, execAsync } from "ags/process";
+import { Accessor, createBinding, createComputed, createState, For, onCleanup } from "gnim";
+import { exec } from "ags/process";
 import { BaseResponse, RequestHandler, RunnerRequest, ScreenshotRequest} from "../util/requests";
 import { bottomMenu, BottomMenuType, setBottomMenu } from "./GlobalState";
 import AstalHyprland from "gi://AstalHyprland?version=0.1";
 import { RunnerSettings } from "../util/runner";
 import { RunnerAction } from "../types/runner_sources/source";
+import { execAsync } from "astal";
 
 const { BOTTOM, TOP, LEFT, RIGHT } = Astal.WindowAnchor
 
@@ -45,6 +46,9 @@ export const BottomMenu = ({children, gdkmonitor, name, revealed, close}: {child
         application={app}
         focusable
         namespace={`shell:${name}`}
+        $={(window) => {
+            onCleanup(() => window.destroy())
+        }}
     >
         <box orientation={Gtk.Orientation.VERTICAL} hexpand={true} vexpand={true} css="background: #00000044;" $={(e) => {
             const gesture = new Gtk.GestureClick();
@@ -83,7 +87,7 @@ const systemctl = (cmd: string) => {
     return exec.bind(null, `systemctl ${cmd}`);
 }
 
-export const PowerMenu = (gdkmonitor: Gdk.Monitor) => {
+export const PowerMenu = ({gdkmonitor}: {gdkmonitor: Gdk.Monitor}) => {
     const open = bottomMenu.as(m => m === BottomMenuType.POWER_MENU);
 
     return <BottomMenu gdkmonitor={gdkmonitor} name="powermenu" revealed={open} close={() => setBottomMenu(BottomMenuType.NONE)}>
@@ -104,7 +108,7 @@ const hyprshot = (cmd: string) => {
     }
 }
 
-export const ScreenshotMenu = (gdkmonitor: Gdk.Monitor) => {
+export const ScreenshotMenu = ({gdkmonitor}: {gdkmonitor: Gdk.Monitor}) => {
     const open = bottomMenu.as(m => m === BottomMenuType.SCREENSHOT);
 
     return <BottomMenu gdkmonitor={gdkmonitor} name="screenshot" revealed={open} close={() => setBottomMenu(BottomMenuType.NONE)}>
@@ -192,7 +196,7 @@ const RunnerResults = ({results, selected, close}: {results: Accessor<RunnerActi
     </box>
 }
 
-export const Runner = (gdkmonitor: Gdk.Monitor) => {
+export const Runner = ({gdkmonitor}: {gdkmonitor: Gdk.Monitor}) => {
     const open = bottomMenu.as(m => m === BottomMenuType.RUNNER);
     const close = () => setBottomMenu(BottomMenuType.NONE);
 

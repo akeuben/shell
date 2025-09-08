@@ -142,7 +142,7 @@ entry {
     border-bottom: 2px solid $fg-color;
 }
 
-.icon-button>image {
+image {
     color: $fg-color;
 }
 
@@ -179,4 +179,29 @@ entry {
 
 calendar, calendar>header, calendar>grid {
     border: none;
+}
+
+.battery {
+    color: $fg-color;
+}
+
+.main-battery {
+    font-size: 32px;
+}
+
+.top-section {
+    background: $base-color;
+    padding: 15px 5px;
+    border-radius: 500px;
+    box-shadow: inset -2px -2px 10px shade($base-color, 0.5);
+
+    button:hover {
+        background: $subbase-color;
+    }
+}
+
+.graph {
+    background: $base-color;
+    border-radius: 34px;
+    padding: 5px;
 }

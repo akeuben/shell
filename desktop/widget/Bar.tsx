@@ -2,7 +2,7 @@ import app from "ags/gtk4/app"
 import { Astal, Gtk, Gdk } from "ags/gtk4"
 import Cairo10 from "gi://cairo"
 import giCairo from "cairo"
-import { Accessor } from "gnim"
+import { Accessor, createState, onCleanup } from "gnim"
 const { TOP, LEFT, RIGHT, BOTTOM} = Astal.WindowAnchor
 import { BluetoothIcon, NetworkIcon } from "./Indicator";
 import { Clock, SystemTray } from "./Tray"
@@ -13,29 +13,32 @@ import { BottomMenuType, setBottomMenu, setTopMenuOpen } from "./GlobalState"
 
 const LEFT_BAR_SIZE = 52;
 
-export function Left(gdkmonitor: Gdk.Monitor) {
-  return (
-    <window
-      visible
-      name="left"
-      class="Bar"
-      gdkmonitor={gdkmonitor}
-      exclusivity={Astal.Exclusivity.EXCLUSIVE}
-      anchor={TOP | LEFT | BOTTOM }
-      application={app}
-      layer={Astal.Layer.TOP}
-    >
-        <centerbox width_request={LEFT_BAR_SIZE} class="bar left" orientation={Gtk.Orientation.VERTICAL}>
-            <box $type="start" orientation={Gtk.Orientation.VERTICAL} spacing={10}>
-                <image icon_name="nix-snowflake-white" pixel_size={24} />
-                <WorkspaceIndicator gdkmonitor={gdkmonitor} />
-                <ClientList gdkmonitor={gdkmonitor} />
-            </box>
-            <ActiveClient $type="center"/>
-            <box $type="end" orientation={Gtk.Orientation.VERTICAL} spacing={10}>
-                <SystemTray />
-                <Clock />
-                <box class="bar-section" orientation={Gtk.Orientation.VERTICAL} spacing={10}>
+export function Left({gdkmonitor}: {gdkmonitor: Gdk.Monitor}) {
+    return (
+        <window
+            visible
+            name="left"
+            class="Bar"
+            gdkmonitor={gdkmonitor}
+            exclusivity={Astal.Exclusivity.EXCLUSIVE}
+            anchor={TOP | LEFT | BOTTOM }
+            application={app}
+            layer={Astal.Layer.TOP}
+            $={(window) => {
+                onCleanup(() => window.destroy())
+            }}
+        >
+            <centerbox width_request={LEFT_BAR_SIZE} class="bar left" orientation={Gtk.Orientation.VERTICAL}>
+                <box $type="start" orientation={Gtk.Orientation.VERTICAL} spacing={10}>
+                    <image icon_name="nix-snowflake-white" pixel_size={24} />
+                    <WorkspaceIndicator gdkmonitor={gdkmonitor} />
+                    <ClientList gdkmonitor={gdkmonitor} />
+                </box>
+                <ActiveClient $type="center"/>
+                <box $type="end" orientation={Gtk.Orientation.VERTICAL} spacing={10}>
+                    <SystemTray />
+                    <Clock />
+                    <box class="bar-section" orientation={Gtk.Orientation.VERTICAL} spacing={10}>
                         <NetworkIcon />
                         <BluetoothIcon />
                     </box>
@@ -47,34 +50,36 @@ export function Left(gdkmonitor: Gdk.Monitor) {
                     })
                     } hexpand={false} vexpand={false}>
                         <image icon_name="system-shutdown-symbolic" pixel_size={24} />
-                </button>
-            </box>
-        </centerbox>
-    </window>
-  )
+                    </button>
+                </box>
+            </centerbox>
+        </window>
+    )
 }
 
-export function Right(gdkmonitor: Gdk.Monitor) {
-  return (
-    <window
-      visible
-      name="right"
-      class="Bar"
-      gdkmonitor={gdkmonitor}
-      exclusivity={Astal.Exclusivity.EXCLUSIVE}
-      anchor={TOP | RIGHT | BOTTOM }
-      application={app}
-      layer={Astal.Layer.TOP}
+export function Right({gdkmonitor}: {gdkmonitor: Gdk.Monitor}) {
+    return (<window
+        visible
+        name="right"
+        class="Bar"
+        gdkmonitor={gdkmonitor}
+        exclusivity={Astal.Exclusivity.EXCLUSIVE}
+        anchor={TOP | RIGHT | BOTTOM }
+        application={app}
+        layer={Astal.Layer.TOP}
+        $={(window) => {
+            onCleanup(() => window.destroy())
+        }}
     >
         <box orientation={Gtk.Orientation.HORIZONTAL}>
             <box width_request={5} class="bar" >
             </box>
         </box>
     </window>
-  )
+    )
 }
 
-export function Top(gdkmonitor: Gdk.Monitor) {
+export function Top({gdkmonitor}: {gdkmonitor: Gdk.Monitor}) {
     return <window
         visible
         name="top"
@@ -83,9 +88,13 @@ export function Top(gdkmonitor: Gdk.Monitor) {
         exclusivity={Astal.Exclusivity.IGNORE}
         anchor={TOP | RIGHT | LEFT }
         application={app}
-      layer={Astal.Layer.TOP}
+        layer={Astal.Layer.TOP}
         $={(window) => {
             updateBounds(window, new Gdk.Rectangle({x: 0, y: 0, width: gdkmonitor.geometry.width, height: 5}));
+            onCleanup(() => window.destroy())
+            gdkmonitor.connect("notify::geometry", () => {
+                updateBounds(window, new Gdk.Rectangle({x: 0, y: 0, width: gdkmonitor.get_geometry().width, height: 5}));
+            })
         }}
     >
         <box orientation={Gtk.Orientation.VERTICAL}>
@@ -101,39 +110,40 @@ export function Top(gdkmonitor: Gdk.Monitor) {
             </box>
             <centerbox orientation={Gtk.Orientation.HORIZONTAL} margin_start={LEFT_BAR_SIZE} margin_end={5}>
                 <InvertedCorner $type="start" class="bar" radius={34} corner="top-left" />
-                    <box $type="center" class="bar" />
+                <box $type="center" class="bar" />
                 <InvertedCorner $type="end" class="bar" radius={34} corner="top-right" />
             </centerbox>
         </box>
     </window>
 }
 
-export function Bottom(gdkmonitor: Gdk.Monitor) {
-  return (
-    <window
-        visible
-        name="bottom"
-        class="Bar"
-        gdkmonitor={gdkmonitor}
-        exclusivity={Astal.Exclusivity.IGNORE}
-        anchor={BOTTOM | RIGHT | LEFT }
-        application={app}
-      layer={Astal.Layer.TOP}
-        $={(window) => {
-            updateBounds(window, new Gdk.Rectangle({x: 0, y: 0, width: gdkmonitor.geometry.width, height: 5}));
-        }}
-    >
-        <box orientation={Gtk.Orientation.VERTICAL} >
-            <centerbox orientation={Gtk.Orientation.HORIZONTAL} margin_start={LEFT_BAR_SIZE} margin_end={5}>
-                <InvertedCorner  $type="start" class="bar" radius={34} corner="bottom-left" />
+export function Bottom({gdkmonitor}: {gdkmonitor: Gdk.Monitor}) {
+    return (
+        <window
+            visible
+            name="bottom"
+            class="Bar"
+            gdkmonitor={gdkmonitor}
+            exclusivity={Astal.Exclusivity.IGNORE}
+            anchor={BOTTOM | RIGHT | LEFT }
+            application={app}
+            layer={Astal.Layer.TOP}
+            $={(window) => {
+                updateBounds(window, new Gdk.Rectangle({x: 0, y: 0, width: gdkmonitor.geometry.width, height: 5}));
+                onCleanup(() => window.destroy())
+            }}
+        >
+            <box orientation={Gtk.Orientation.VERTICAL} >
+                <centerbox orientation={Gtk.Orientation.HORIZONTAL} margin_start={LEFT_BAR_SIZE} margin_end={5}>
+                    <InvertedCorner  $type="start" class="bar" radius={34} corner="bottom-left" />
                     <box $type="center" class="bar" />
-                <InvertedCorner $type="end" class="bar" radius={34} corner="bottom-right" />
-            </centerbox>
-            <box height_request={5} class="bar">
+                    <InvertedCorner $type="end" class="bar" radius={34} corner="bottom-right" />
+                </centerbox>
+                <box height_request={5} class="bar">
+                </box>
             </box>
-        </box>
-    </window>
-  )
+        </window>
+    )
 }
 
 export function updateBounds(window: Astal.Window, clickableArea: Gdk.Rectangle) {

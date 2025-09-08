@@ -1,4 +1,4 @@
-import { Gtk } from "ags/gtk4";
+import { Astal, Gtk } from "ags/gtk4";
 import AstalBluetooth from "gi://AstalBluetooth?version=0.1";
 import AstalNetwork from "gi://AstalNetwork?version=0.1";
 import { Accessor, createBinding, createComputed, With } from "gnim";
@@ -6,17 +6,36 @@ import { Accessor, createBinding, createComputed, With } from "gnim";
 const bluetooth = AstalBluetooth.get_default();
 const network = AstalNetwork.get_default();
 
-export const NetworkIcon = () => {
-    const wifi = network.wifi;
-    const wired = network.wired;
+const InternalNetworkIcon = ({network}: {network: AstalNetwork.Wifi | AstalNetwork.Wired}) => {
+    const device = createBinding(network, "device");
+    
+    return <Astal.Bin>
+        <With value={device}>
+            {device => {
+                console.log(device);
+                return device ? <image pixel_size={24} icon_name={createBinding(network, "icon_name")} />
+                : <></>
+            }}
+        </With>
+    </Astal.Bin>
+}
 
-    return <With value={createBinding(network, "primary")}>
-        {value => 
-            value === AstalNetwork.Primary.WIFI ? <image pixel_size={24} icon_name={createBinding(wifi, "icon_name")} /> : 
-            value === AstalNetwork.Primary.WIRED ? <image pixel_size={24} icon_name={createBinding(wired, "icon_name")} /> :
-            <image icon_size={Gtk.IconSize.LARGE} icon_name="network-wireless-disabled-symbolic" /> 
-        }
-    </With>;
+export const NetworkIcon = () => {
+    const wifi = createBinding(network, "wifi");
+    const wired = createBinding(network, "wired");
+
+    return <Astal.Bin>
+        <With value={createBinding(network, "primary")}>
+            {value => <Astal.Bin>
+                {
+                    value === AstalNetwork.Primary.WIFI ? <With value={wifi}>{n => <InternalNetworkIcon network={n} />}</With> : 
+                    value === AstalNetwork.Primary.WIRED ? <With value={wired}>{n => <InternalNetworkIcon network={n} />}</With> :
+                    <image pixel_size={24} icon_name="network-wireless-connected-00-symbolic" /> 
+                }
+                </Astal.Bin>
+            }
+        </With>
+    </Astal.Bin>;
 }
 
 export const BluetoothIcon = () => {

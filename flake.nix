@@ -13,13 +13,18 @@
             url = "github:aylur/ags";
             inputs.nixpkgs.follows = "nixpkgs";
         };
+
+        icon-theme-browser = {
+            url = "github:aylur/icon-theme-browser";
+        };
     };
 
     outputs = {
         self,
         nixpkgs,
         ags,
-        astal
+        astal,
+        icon-theme-browser
     }: let
         system = "x86_64-linux";
         pkgs = nixpkgs.legacyPackages.${system};
@@ -77,6 +82,7 @@
                     pkgs.gobject-introspection
                     pkgs.evolution-data-server
                     pkgs.nodejs
+                    icon-theme-browser.packages.${system}.default
                 ];
                 propogatedUserEnvPkgs = [
                     pkgs.evolution-data-server

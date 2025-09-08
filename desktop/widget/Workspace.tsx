@@ -6,8 +6,8 @@ const hyprland = AstalHyprland.get_default();
 
 const determineWorkspaceClass = (active_workspace: AstalHyprland.Workspace, current_workspace: AstalHyprland.Workspace) => {
     let clazz = "workspace-indicator ";
-
-    if(active_workspace.name === current_workspace.name) {
+    
+    if(active_workspace && active_workspace.name === current_workspace.name) {
         clazz += "active ";
     }
     if(isNaN(parseInt(current_workspace.name))) {
