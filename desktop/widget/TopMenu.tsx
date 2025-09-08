@@ -1,18 +1,18 @@
 import { Astal, Gdk, Gtk } from "ags/gtk4";
 import AstalHyprland from "gi://AstalHyprland?version=0.1";
-import { Accessor, createBinding, createComputed, createExternal, createState, onCleanup, With } from "gnim";
+import { Accessor, createBinding, createComputed, createExternal, createState, onCleanup} from "gnim";
 import app from "ags/gtk4/app";
 import { setTopMenuOpen, topMenuOpen } from "./GlobalState";
 import { animateRadius, InvertedCorner } from "./InvertedCorner";
 import { IconButton } from "./IconButton";
 import { createPoll } from "ags/time";
 import AstalBattery from "gi://AstalBattery?version=0.1";
-import { Gio, GObject } from "astal";
 import { Variant } from "gnim/dbus";
 import Gsk from "gi://Gsk?version=4.0";
-import { property, register } from "gnim/gobject";
+import GObject, { property, register } from "gnim/gobject";
 import Pango from "gi://Pango?version=1.0";
 import Graphene from "gi://Graphene?version=1.0";
+import Gio from "gi://Gio?version=2.0";
 
 const { BOTTOM, TOP, LEFT, RIGHT } = Astal.WindowAnchor
 

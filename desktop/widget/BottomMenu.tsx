@@ -3,13 +3,12 @@ import app from "ags/gtk4/app";
 import { animateRadius, InvertedCorner } from "./InvertedCorner";
 import { IconButton } from "./IconButton";
 import { Accessor, createBinding, createComputed, createState, For, onCleanup } from "gnim";
-import { exec } from "ags/process";
+import { exec, execAsync } from "ags/process";
 import { BaseResponse, RequestHandler, RunnerRequest, ScreenshotRequest} from "../util/requests";
 import { bottomMenu, BottomMenuType, setBottomMenu } from "./GlobalState";
 import AstalHyprland from "gi://AstalHyprland?version=0.1";
 import { RunnerSettings } from "../util/runner";
 import { RunnerAction } from "../types/runner_sources/source";
-import { execAsync } from "astal";
 
 const { BOTTOM, TOP, LEFT, RIGHT } = Astal.WindowAnchor
 
