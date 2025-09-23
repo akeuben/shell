@@ -112,7 +112,7 @@ const ActiveClientInner = ({client}: {client: AstalHyprland.Client}) => {
     return <box halign={Gtk.Align.CENTER} hexpand={false}>
             <box orientation={Gtk.Orientation.VERTICAL} spacing={10} class="bar-section">
                 <image icon_name={fixup_icons(client.initial_class)} pixel_size={24} />
-                <RotatedLabel label={title_modifier(client.title)} angle={90}/>
+                <RotatedLabel label={createBinding(client, "title").as(title_modifier)} angle={90}/>
                 <button icon_name="close-symbolic" onClicked={() => {
                     client.kill();
                 }} cursor={pointer}/>
