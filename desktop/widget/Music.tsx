@@ -1,16 +1,96 @@
-import { Gdk, Gtk } from "ags/gtk4";
+import { Gtk } from "ags/gtk4";
 import Adw from "gi://Adw?version=1";
 import AstalMpris from "gi://AstalMpris?version=0.1"
-import Graphene from "gi://Graphene?version=1.0";
-import Gsk from "gi://Gsk?version=4.0";
 import { Accessor, createBinding, createComputed, createState, For, With } from "gnim";
-import { property, register } from "gnim/gobject";
 import { WrappedMarqueeLabel } from "./Marquee";
-import Atspi20 from "gi://Atspi";
 import { IconButton } from "./IconButton";
-import { Icon } from "astal/gtk3/widget";
+import { property, register } from "gnim/gobject";
+import GObject from "gi://GObject?version=2.0";
+import { Gio, GLib } from "astal";
+
+@register()
+class KappashellMPD extends GObject.Object {
+    private static instance: KappashellMPD;
+
+    @property(Number)
+    test: number = 5;
+
+    private client: Gio.SocketClient;
+    private connection: Gio.SocketConnection;
+    private socket: Gio.Socket;
+
+    private encoder = new TextEncoder();
+    private decoder = new TextDecoder();
+    
+    private receiveInterval: GLib.Source;
+
+    private prev_message_part: string = "";
+    
+    constructor(props: {host?: string, port?: number}) {
+        super();
+
+        this.client = Gio.SocketClient.new();
+        this.connection = this.client.connect_to_host(props.host || "localhost", props.port || 6600, null);
+        this.socket = this.connection.socket;
+
+        this.receiveInterval = setInterval(this._receiveMessages.bind(this), 100);
+
+        this.sendCommand("play");
+    }
+
+    _receiveMessages() {
+        try {
+            const bytes = this.connection.get_socket().receive_bytes(1000, 1000, null);
+            const msg = this.decoder.decode(bytes.get_data() as any);
+
+            let parts = msg.split("\n");
+            parts[0] = this.prev_message_part + parts[0];
+            this.prev_message_part = parts.pop() || "";
+
+            parts = parts.filter(a => a!=="OK")
+
+            console.log(parts);
+            
+            this._sendCommand("idle");
+        } catch {
+        }
+    }
+
+    _sendCommand(cmd: string, ...args: string[]) {
+        let msg = cmd;
+
+        for(const arg of args) {
+            msg += ` "${arg}"`;
+        }
+
+        const encoded = this.encoder.encode(msg + "\n");
+
+        this.socket.send(encoded, null);
+    }
+
+    private sendCommand(cmd: string, ...args: string[]) {
+        this._sendCommand("noidle");
+        this._sendCommand(cmd, ...args);
+    }
+
+    static get_default() {
+        if(!this.instance) {
+            this.instance = new KappashellMPD({host: "localhost", port: 6600});
+        }
+
+        return this.instance;
+    }
+
+    vfunc_dispose(): void {
+        super.vfunc_dispose();
+        this.connection.close();
+        clearInterval(this.receiveInterval);
+    }
+}
 
 const mpris = AstalMpris.get_default();
+
+const mpd = KappashellMPD.get_default();
 
 const playbackStatusIcon = (status: AstalMpris.PlaybackStatus): string => {
     switch(status) {
