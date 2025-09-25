@@ -1,10 +1,10 @@
 import { Gdk, Gtk } from "ags/gtk4";
-import { GObject, property, register } from "astal";
 import Graphene from "gi://Graphene?version=1.0";
 import Gsk from "gi://Gsk?version=4.0";
 import Pango from "gi://Pango?version=1.0";
 import { Accessor } from "gnim";
 import { isAccessor } from "../util/generic";
+import GObject, { property, register } from "gnim/gobject";
 
 @register()
 export class Point extends GObject.Object {

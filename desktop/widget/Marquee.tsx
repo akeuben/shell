@@ -1,9 +1,11 @@
 import { Gtk } from "ags/gtk4";
-import { GLib, property, register } from "astal";
 import Graphene from "gi://Graphene?version=1.0";
 import Gsk from "gi://Gsk?version=4.0";
 import Pango from "gi://Pango?version=1.0";
 import { Accessor } from "gnim";
+import { isAccessor } from "../util/generic";
+import { property, register } from "gnim/gobject";
+import { GLib } from "astal";
 
 @register()
 export class MarqueeLabel extends Gtk.Label {
@@ -29,7 +31,7 @@ export class MarqueeLabel extends Gtk.Label {
             this.add_css_class(props.cssClass);
         }
 
-        if(props.label instanceof Accessor) {
+        if(isAccessor(props.label)) {
             props.label.subscribe(() => {
                 this.set_label((props.label as Accessor<string>).get())
             })
