@@ -58,7 +58,7 @@ export const TopMenu = ({gdkmonitor}: {gdkmonitor: Gdk.Monitor}) => {
             onCleanup(() => window.destroy())
         }}
 >
-        <box orientation={Gtk.Orientation.VERTICAL} hexpand={true} vexpand={true} css="background: #00000044;" $={(e) => {
+        <box focus_on_click orientation={Gtk.Orientation.VERTICAL} hexpand={true} vexpand={true} css="background: #00000044;" $={(e) => {
             const gesture = new Gtk.GestureClick();
             gesture.connect("released", () => {
                 setTopMenuOpen(false);
@@ -263,7 +263,6 @@ export class MarqueeLabel extends Gtk.Label {
             super.vfunc_snapshot(snapshot);
         } else {
             const text_width = super.vfunc_measure(Gtk.Orientation.HORIZONTAL, -1)[0];
-            console.log(text_width, alloc.width);
             const transform = new Gsk.Transform().translate(
                 new Graphene.Point({ x: (alloc.width - text_width) / 2, y: 0 })
             );
@@ -275,10 +274,6 @@ export class MarqueeLabel extends Gtk.Label {
     vfunc_measure(orientation: Gtk.Orientation, for_size: number): [number, number, number, number] {
         const [a, b, c, d] = super.vfunc_measure(orientation, for_size);
 
-        console.log(a, b, c, d);
-
-        console.log("O: " + orientation);
-        
         if(orientation === Gtk.Orientation.HORIZONTAL) {
             return [100, for_size > 0 ? for_size : 100, -1, -1]
         }
@@ -353,7 +348,6 @@ const BluetoothPage = ({name}: {name: string}) => {
     bluetooth.connect("device-added", (b, d) => {
         if(!d.name) return;
         if(devices.get().findIndex(d2 => d2.address == d.address) >= 0) {
-            console.log(`The device ${d.name} is already in the list`);
             return;
         }
         setDevices([...devices.get(), d].sort((a, b) => score(b) - score(a)));
@@ -413,7 +407,7 @@ const BluetoothPage = ({name}: {name: string}) => {
         <With value={createBinding(bluetooth.adapter, "powered")}>
         { 
             (powered: boolean) => powered && <scrolledwindow hexpand vscrollbarPolicy={Gtk.PolicyType.AUTOMATIC} hscrollbar_policy={Gtk.PolicyType.NEVER}> 
-                <box orientation={Gtk.Orientation.VERTICAL} spacing={20}>
+                <box orientation={Gtk.Orientation.VERTICAL} spacing={10}>
                     <For each={devices.as(d => d.filter(d => d.name))}>
                         {(device: AstalBluetooth.Device) => <BluetoothDeviceCard device={device} />}
                     </For>
@@ -453,10 +447,6 @@ const NetworkDetails = ({wifi}: {wifi: AstalNetwork.Wifi | AstalNetwork.Wired}) 
     if(!wifi) return <box />
 
 
-    if(wifi) {
-        console.log(wifi.get_device().get_active_connection().get_ip4_config().get_addresses().map(a => a.get_address()))
-    }
-    
     return <box valign={Gtk.Align.START} hexpand orientation={Gtk.Orientation.VERTICAL} spacing={10}>
         <label hexpand halign={Gtk.Align.CENTER} label={wifi instanceof AstalNetwork.Wifi ? "Wifi" : "Ethernet"} class="toggle-label" />
         <box hexpand class="top-section" orientation={Gtk.Orientation.VERTICAL}>
@@ -507,10 +497,11 @@ const NetworkAPCard = ({ap}: {ap: AstalNetwork.AccessPoint}) => {
             <WrappedMarqueeLabel label={createBinding(ap, "ssid").as(name => name ? (name.length > 25 ? name.substring(0, 25) + "..." : name) : "Unknown")} cssClass="connectable-title" />
             <label label={createBinding(ap, "requires_password").as(p => p ? "Secured" : "Open")} />
         </box>
-        <box width_request={50} height_request={75} orientation={Gtk.Orientation.VERTICAL} valign={Gtk.Align.CENTER}>
+        <box width_request={50} orientation={Gtk.Orientation.VERTICAL} valign={Gtk.Align.CENTER}>
                 <IconButton className={undefined} icon_name="plus-symbolic" pixel_size={24} onClicked={() => {
-                }} />
-                <IconButton className={undefined} icon_name="minus-symbolic" pixel_size={24} onClicked={() => {
+                ap.get_connections()[0]
+                    ap.activate(null, (_, res) => {
+                    })
                 }} />
         </box>
     </box>
@@ -520,24 +511,133 @@ function unique<T>(list: T[], id: (arg0: T) => string) {
     return list.filter((e, i, l) => l.findIndex(e2 => id(e) === id(e2)) === i);
 }
 
+const prettyPrintStatus = (status: AstalNetwork.DeviceState) => {
+    switch(status) {
+        case AstalNetwork.DeviceState.ACTIVATED:
+            return "Connected";
+        case AstalNetwork.DeviceState.CONFIG:
+            return "Configuring";
+        case AstalNetwork.DeviceState.DEACTIVATING:
+            return "Disconnecting";
+        case AstalNetwork.DeviceState.DISCONNECTED:
+            return "Disconnected";
+        case AstalNetwork.DeviceState.FAILED:
+        case AstalNetwork.DeviceState.UNAVAILABLE:
+            return "Failed";
+        case AstalNetwork.DeviceState.NEED_AUTH:
+            return "Authentication Failed";
+        case AstalNetwork.DeviceState.IP_CHECK:
+        case AstalNetwork.DeviceState.IP_CONFIG:
+            return "Acquiring IP";
+        case AstalNetwork.DeviceState.PREPARE:
+            return "Connecting";
+        case AstalNetwork.DeviceState.SECONDARIES:
+        case AstalNetwork.DeviceState.UNKNOWN:
+        case AstalNetwork.DeviceState.UNMANAGED:
+            return "Unknown";
+    }
+}
+
+const NetworkActiveCard = ({wifi}: {wifi: AstalNetwork.Wifi}) => {
+    const ssid = createBinding(wifi, "ssid");
+    const icon = createBinding(wifi, "icon_name");
+    const status = createBinding(wifi, "state");
+
+    const [needPassword, setNeedPassword] = createState<AstalNetwork.AccessPoint | null>(null);
+
+    wifi.connect("notify::state", () => {
+        if(wifi.state === AstalNetwork.DeviceState.FAILED) {
+            setNeedPassword(wifi.access_points.find(ap => ap.ssid === wifi.ssid) || null);
+        }
+    })
+    wifi.connect("notify::ssid", () => {
+        console.log(wifi.ssid)
+    })
+
+    const height = 110;
+    const width = 350;
+
+    return <With value={needPassword}>
+        {needPassword => !needPassword ? 
+            <box height_request={height} width_request={width} spacing={10} orientation={Gtk.Orientation.HORIZONTAL} vexpand={false} valign={Gtk.Align.START} class="top-section">
+                <image icon_name={icon.as(i => i ? (i.includes("symbolic") ? i : `${i}-symbolic`) : "network-wireless-acquiring-symbolic")} pixel_size={48} />
+                <box orientation={Gtk.Orientation.VERTICAL} hexpand valign={Gtk.Align.CENTER}>
+                    <WrappedMarqueeLabel label={ssid.as(name => name ? (name.length > 25 ? name.substring(0, 25) + "..." : name) : "Unknown")} cssClass="connectable-title" />
+                    <label label={status.as(prettyPrintStatus)} />
+                </box>
+                <With value={status}>
+                    {state => <box width_request={50} orientation={Gtk.Orientation.VERTICAL} valign={Gtk.Align.CENTER}>
+                        {state === AstalNetwork.DeviceState.ACTIVATED ? 
+                            <IconButton className={undefined} icon_name="minus-symbolic" pixel_size={24} onClicked={() => {
+                                wifi.deactivate_connection((_, res) => {
+                                    wifi.deactivate_connection_finish(res);
+                                });
+                            }} />
+                         : 
+                        <Gtk.Spinner spinning width_request={32} height_request={32} />}
+                    </box>}
+                </With>
+            </box> : 
+            <box height_request={height} width_request={width} spacing={10} orientation={Gtk.Orientation.HORIZONTAL} vexpand={false} valign={Gtk.Align.START} class="top-section">
+                <image icon_name={createBinding(needPassword, "icon_name").as(i => i ? (i.includes("symbolic") ? i : `${i}-symbolic`) : "network-wireless-acquiring-symbolic")} pixel_size={48} />
+                <box orientation={Gtk.Orientation.VERTICAL} hexpand valign={Gtk.Align.CENTER} spacing={10}>
+                    <WrappedMarqueeLabel label={createBinding(needPassword, "ssid").as(name => name ? (name.length > 25 ? name.substring(0, 25) + "..." : name) : "Unknown")} cssClass="connectable-title" />
+                    <Gtk.PasswordEntry placeholder_text="Enter Password" $={(self) => {
+                        setTimeout(() => {
+                            self.grab_focus();
+                        }, 100);
+
+                        const controller = Gtk.EventControllerKey.new();
+                        controller.set_propagation_phase(Gtk.PropagationPhase.CAPTURE);
+                        controller.connect("key-released", (_controller, key, _keycode, _state) => {
+                            if([Gdk.KEY_Return, Gdk.KEY_KP_Enter].includes(key)) {
+                                console.log(self.text);
+                                needPassword.activate(self.text, (_, res) => {
+                                    needPassword.activate_finish(res);
+                                    setNeedPassword(null);
+                                })
+                                return Gdk.EVENT_STOP;
+                            }
+                            if(key === Gdk.KEY_Escape) {
+                                setNeedPassword(null);
+                                return Gdk.EVENT_STOP;
+                            }
+                            return Gdk.EVENT_PROPAGATE;
+                        })
+
+                        const controller2 = Gtk.EventControllerFocus.new();
+                        controller2.connect("leave", () => {
+                            setNeedPassword(null);
+                            return Gdk.EVENT_STOP;
+                        })
+                        self.add_controller(controller);
+                    }}/>
+                </box>
+            </box>
+        }
+    </With>
+}
+
 const NetworkList = ({wifi}: {wifi: AstalNetwork.Wifi}) => {
     const aps = createBinding(wifi, "access_points").as(aps => unique(aps.sort((a, b) => b.strength - a.strength), ap => ap.ssid));
     const active_ssid = createBinding(wifi, "ssid");
 
     const connectable = createComputed([aps, active_ssid], (aps, active_ssid) => aps.filter(a => a.ssid !== active_ssid));
 
-    return <box hexpand>
-        <With value={createBinding(wifi, "enabled")}>
-        { 
-            (powered: boolean) => powered && <scrolledwindow hexpand vscrollbarPolicy={Gtk.PolicyType.AUTOMATIC} hscrollbar_policy={Gtk.PolicyType.NEVER}> 
-                <box orientation={Gtk.Orientation.VERTICAL} spacing={20}>
-                    <For each={connectable}>
-                        {(ap: AstalNetwork.AccessPoint) => <NetworkAPCard ap={ap} />}
-                    </For>
-                </box>
-            </scrolledwindow>
-        }
-        </With>
+    return <box hexpand vexpand orientation={Gtk.Orientation.VERTICAL} spacing={10}>
+        <box vexpand>
+            <With value={createBinding(wifi, "enabled")}>
+            { 
+                (powered: boolean) => powered && <scrolledwindow hexpand vscrollbarPolicy={Gtk.PolicyType.AUTOMATIC} hscrollbar_policy={Gtk.PolicyType.NEVER}> 
+                    <box orientation={Gtk.Orientation.VERTICAL} spacing={10}>
+                        <For each={connectable}>
+                            {(ap: AstalNetwork.AccessPoint) => <NetworkAPCard ap={ap} />}
+                        </For>
+                    </box>
+                </scrolledwindow>
+            }
+            </With>
+        </box>
     </box>
 
 }
@@ -617,7 +717,10 @@ const WifiPage = ({name}: {name: string}) => {
 
     const InfoColumn = <box hexpand spacing={10} orientation={Gtk.Orientation.VERTICAL}>
         <With value={wifi}>
-            {wifi => <NetworkDetails wifi={wifi} />}
+            {wifi => <box orientation={Gtk.Orientation.VERTICAL} spacing={10}>
+                <NetworkDetails wifi={wifi} />
+                <NetworkActiveCard wifi={wifi} />
+            </box>}
         </With>
     </box>
 
@@ -791,7 +894,6 @@ class LineGraphWidget extends Gtk.DrawingArea {
         super();
 
         if(isAccessor(props.points)) {
-            console.log('test');
             this.points = props.points.get();
             props.points.subscribe(() => {
                 // @ts-ignore-next-line
@@ -816,7 +918,6 @@ class LineGraphWidget extends Gtk.DrawingArea {
             props.graphColor.subscribe(() => {
                 // @ts-ignore-next-line
                 this.graphColor = props.graphColor.get();
-                console.log("Changed graph color");
                 this.queue_draw();
             })
         } else {

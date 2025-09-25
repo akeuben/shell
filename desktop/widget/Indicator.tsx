@@ -12,7 +12,6 @@ const InternalNetworkIcon = ({network}: {network: AstalNetwork.Wifi | AstalNetwo
     return <Astal.Bin>
         <With value={device}>
             {device => {
-                console.log(device);
                 return device ? <image pixel_size={24} icon_name={createBinding(network, "icon_name")} />
                 : <></>
             }}
