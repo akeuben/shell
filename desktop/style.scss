@@ -48,6 +48,19 @@ window.Bar {
     padding: 15px;
 }
 
+.queue-current {
+    border-radius: 15px;
+    background: shade($accent_color, 0.5);
+}
+
+.queue-item {
+    padding: 10px;
+}
+
+.drop-indicator {
+    background: $accent_color;
+}
+
 button {
   background: transparent;
   border-radius: 500px;
@@ -138,7 +151,7 @@ button:hover {
 
 .top-menu-content .icon-button.playback-toggle:hover {
   background: shade($accent_color, 0.6);
-  scale: 1.2;
+  transform: scale(1.2);
 }
 
 .runner-result {
@@ -255,7 +268,7 @@ calendar, calendar>header, calendar>grid {
     background-position: center center;
     background-repeat: no-repeat;
     background-size: cover;
-    border-radius: 15px;
+    border-radius: 15px; 
 }
 
 .cover {

@@ -309,7 +309,7 @@ const WifiPage = ({name}: {name: string}) => {
     const Grid = Gtk.Grid.new();
     Grid.name = name;
     Grid.column_homogeneous = true;
-    Grid.column_spacing = 10;
+    Grid.set_column_spacing(10);
     Grid.margin_top = 10;
     Grid.margin_bottom = 10;
     Grid.attach(InfoColumn as Gtk.Widget, 0, 0, 1, 1);

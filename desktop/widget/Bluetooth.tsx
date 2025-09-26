@@ -15,8 +15,9 @@ const connect_device = async(device: AstalBluetooth.Device) => {
     device.connect_device(async (_, res) => {
         try {
             device.connect_device_finish(res)
-            await execAsync(`bluetoothctl pair ${device.address}`)
-            await execAsync(`bluetoothctl trust ${device.address}`)
+            setTimeout(() => {
+                execAsync(`bluetoothctl pair ${device.address}`)
+            }, 500);
         } catch {}
     });
 }
@@ -191,7 +192,7 @@ export const BluetoothPage = ({name}: {name: string}) => {
     const Grid = Gtk.Grid.new();
     Grid.name = name;
     Grid.column_homogeneous = true;
-    Grid.column_spacing = 10;
+    Grid.set_column_spacing(10);
     Grid.margin_top = 10;
     Grid.margin_bottom = 10;
     Grid.attach(InfoColumn as Gtk.Widget, 0, 0, 1, 1);
