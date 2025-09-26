@@ -1,9 +1,9 @@
 import { Gtk } from "ags/gtk4";
-import { Gio } from "astal";
 import AstalBattery from "gi://AstalBattery?version=0.1";
 import { Accessor, createBinding, createComputed, createExternal } from "gnim";
 import { Variant } from "gnim/dbus";
 import { LineGraph, NumberArray, Point, PointsList } from "./LineGraph";
+import Gio from "gi://Gio?version=2.0";
 
 const PCBattery = ({battery}: {battery: AstalBattery.Device}) => {
     const icon = createBinding(battery, "icon_name");

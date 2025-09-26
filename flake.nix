@@ -40,6 +40,7 @@
                     wrapGAppsHook
                     gobject-introspection
                     ags.packages.${system}.default
+                    libadwaita
                 ];
                 buildInputs = [
                     pkgs.glib 
@@ -58,6 +59,7 @@
                     astal.packages.${system}.greet
                     pkgs.evolution-data-server
                     pkgs.nodejs
+                    pkgs.libadwaita
                 ];
                 installPhase = ''
                     mkdir -p $out/bin

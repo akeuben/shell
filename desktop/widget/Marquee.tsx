@@ -5,7 +5,7 @@ import Pango from "gi://Pango?version=1.0";
 import { Accessor } from "gnim";
 import { isAccessor } from "../util/generic";
 import { property, register } from "gnim/gobject";
-import { GLib } from "astal";
+import GLib from "gi://GLib?version=2.0";
 
 @register()
 export class MarqueeLabel extends Gtk.Label {

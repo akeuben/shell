@@ -1,9 +1,9 @@
 import { Astal, Gtk } from "ags/gtk4";
-import { execAsync } from "astal";
 import AstalBluetooth from "gi://AstalBluetooth?version=0.1";
 import { IconButton } from "./IconButton";
 import { createBinding, createComputed, createState, For, With } from "gnim";
 import { WrappedMarqueeLabel } from "./Marquee";
+import { execAsync } from "ags/process";
 
 const pair_device = async (device: AstalBluetooth.Device) => {
     await execAsync(`bluetoothctl pair ${device.address}`)

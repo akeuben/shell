@@ -1,4 +1,5 @@
-import { Gio, GLib } from "astal";
+import Gio from "gi://Gio?version=2.0";
+import GLib from "gi://GLib?version=2.0";
 import GObject, { getter, register, setter } from "gnim/gobject";
 
 export namespace KappashellMPD {
