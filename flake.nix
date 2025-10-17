@@ -9,11 +9,6 @@
             inputs.nixpkgs.follows = "nixpkgs";
         };
 
-        ags = {
-            url = "github:aylur/ags";
-            inputs.nixpkgs.follows = "nixpkgs";
-        };
-
         icon-theme-browser = {
             url = "github:aylur/icon-theme-browser";
         };
@@ -22,7 +17,6 @@
     outputs = {
         self,
         nixpkgs,
-        ags,
         astal,
         icon-theme-browser
     }: let
@@ -37,15 +31,11 @@
 
                 src = ./desktop;
                 nativeBuildInputs = with pkgs; [
-                    wrapGAppsHook
                     gobject-introspection
-                    ags.packages.${system}.default
-                    libadwaita
-                    nodejs
+                    zig_0_15
                 ];
                 buildInputs = [
                     pkgs.glib 
-                    pkgs.gjs 
                     astal.packages.${system}.io
                     astal.packages.${system}.astal4
                     astal.packages.${system}.hyprland
@@ -59,22 +49,8 @@
                     astal.packages.${system}.battery
                     astal.packages.${system}.greet
                     pkgs.evolution-data-server
-                    pkgs.nodejs
                     pkgs.libadwaita
                 ];
-                installPhase = ''
-                    mkdir -p $out/bin
-                    ags bundle app.ts $out/bin/${name}
-                '';
-
-                preFixup = ''
-                    gappsWrapperArgs+=(
-                    --prefix PATH : ${pkgs.lib.makeBinPath [
-                        pkgs.coreutils
-                        pkgs.hyprshot
-                    ]}
-                    )
-                '';
             };
         };
 
@@ -82,15 +58,10 @@
             default = pkgs.mkShell {
                 buildInputs = [
                     # includes all Astal libraries
-                    ags.packages.${system}.agsFull
                     pkgs.gobject-introspection
                     pkgs.evolution-data-server
-                    pkgs.nodejs
                     icon-theme-browser.packages.${system}.default
-                    pkgs.hyprshot
-                ];
-                propogatedUserEnvPkgs = [
-                    pkgs.evolution-data-server
+                    pkgs.zig_0_15
                 ];
             };
         };
