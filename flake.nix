@@ -86,11 +86,11 @@
                     pkgs.evolution-data-server
                     pkgs.nodejs
                     icon-theme-browser.packages.${system}.default
+                    pkgs.hyprshot
                 ];
                 propogatedUserEnvPkgs = [
                     pkgs.evolution-data-server
                 ];
-                GSK_RENDERER = "opengl";
             };
         };
     };

@@ -2,11 +2,11 @@ import { Astal, Gdk, Gtk } from "ags/gtk4";
 import Adw from "gi://Adw?version=1";
 import AstalMpris from "gi://AstalMpris?version=0.1"
 import { Accessor, createBinding, createComputed, createState, For, With } from "gnim";
-import { MarqueeLabel, WrappedMarqueeLabel } from "./Marquee";
+import { WrappedMarqueeLabel } from "./Marquee";
 import { IconButton } from "./IconButton";
 import { KappashellMPD } from "../lib/mpd/mpd";
-import { GLib } from "astal";
-import { Icon, Label } from "astal/gtk3/widget";
+import { Gio, GLib } from "astal";
+import { pointer } from "../util/cursor";
 
 
 const mpris = AstalMpris.get_default();
@@ -88,7 +88,6 @@ const MPRISWidget = () => {
         const c = current.get();
         if(c && c >= mpris.players.length - 1) {
             if(mpris.players.length === 0) {
-                console.log("Lost last client!")
                 setCurrent(_ => -1);
                 return;
             }
@@ -97,15 +96,9 @@ const MPRISWidget = () => {
     })
 
     mpris.connect("player-added", () => {
-        console.log("player added: " + mpris.players.length)
         if(mpris.players.length === 1) {
-            console.log("Set current to 0")
             setCurrent(_ => 0);
         }
-    })
-
-    current.subscribe(() => {
-        console.log("CURRENT: " + current.as(c => `${c}`).get())
     })
 
     return <box class="top-section-no-padding" hexpand>
@@ -128,6 +121,7 @@ const TrackView = ({name}: {name: string}) => {
         <Gtk.Entry placeholder_text="Search All Tracks" hexpand onNotifyText={async (self) => {
             if(self.text.length >= 3) {
                 const songs = await mpd.search_songs(self.text, 'title');
+                console.log(songs.map(song => song.file));
                 setTracklist(songs);
             } else {
                 setTracklist([]);
@@ -136,14 +130,150 @@ const TrackView = ({name}: {name: string}) => {
         <scrolledwindow vexpand hexpand vscrollbarPolicy={Gtk.PolicyType.AUTOMATIC} hscrollbar_policy={Gtk.PolicyType.NEVER}>
             <box orientation={Gtk.Orientation.VERTICAL} spacing={5}>
                 <For each={tracklist}>
-                    {track => <MPDSongElement song={track} />}
+                    {(song: KappashellMPD.Song, index) => 
+                        <Astal.Bin onMap={(self) => {
+                            self.set_child(<MPDSongElement song={song} index={index} scrolledWindow={self.parent.parent as Gtk.ScrolledWindow} /> as Gtk.Widget);
+                        }} />
+                    }
                 </For>
             </box>
         </scrolledwindow>
     </box>
 }
 
-const MPDSongElement = ({song}: {song: KappashellMPD.Song}) => {
+const PlaylistEditButton = ({playlist, setSelectedPlaylist}: {playlist: KappashellMPD.Playlist, setSelectedPlaylist: (arg0: KappashellMPD.Playlist | null) => void}) => {
+    const popover = new Gtk.Popover();
+    const popoverBox = new Gtk.Box();
+    popover.set_child(popoverBox);
+
+    const menuButton = new Gtk.MenuButton();
+    menuButton.icon_name = "edit-symbolic";
+    menuButton.popover = popover;
+
+    const entry = new Gtk.Entry();
+    entry.placeholder_text = "Rename Playlist";
+    entry.connect("activate", () => {
+        playlist.name = entry.text;
+        popover.popdown();
+    })
+
+    const button = IconButton({className: "", icon_name: "remove-symbolic", pixel_size: 16, onClicked: () => {
+        playlist.delete();
+        popover.popdown();
+        setSelectedPlaylist(null);
+    }}) as Gtk.Button;
+
+    popoverBox.append(entry);
+    popoverBox.append(button as any);
+    
+    return menuButton;
+}
+
+const PlaylistEntry = ({playlist, setSelectedPlaylist}: {playlist: KappashellMPD.Playlist, selectedPlaylist: Accessor<KappashellMPD.Playlist | null>, setSelectedPlaylist: (pl: KappashellMPD.Playlist | null) => void}) => {
+    return <box>
+        <button cursor={pointer} hexpand onClicked={() => {
+            setSelectedPlaylist(playlist);
+        }}>
+            <label label={createBinding(playlist, "name")} />
+        </button>
+        <PlaylistEditButton playlist={playlist} setSelectedPlaylist={setSelectedPlaylist} />
+    </box>
+}
+
+const PlaylistView = ({name}: {name: string}) => {
+    const [selectedPlaylist, setSelectedPlaylist] = createState<KappashellMPD.Playlist | null>(null);
+
+    return <stack name={name} visible_child_name={selectedPlaylist.as(p => p ? "list" : "null")} transition_type={Gtk.StackTransitionType.SLIDE_LEFT_RIGHT} class="top-section">
+        <box $type="named" name="null" orientation={Gtk.Orientation.VERTICAL} vexpand>
+            <scrolledwindow vexpand hexpand vscrollbarPolicy={Gtk.PolicyType.AUTOMATIC} hscrollbar_policy={Gtk.PolicyType.NEVER}>
+                <box orientation={Gtk.Orientation.VERTICAL} spacing={5}>
+                    <For each={createBinding(mpd, "playlists")}>
+                        {(playlist: KappashellMPD.Playlist) => <PlaylistEntry playlist={playlist} selectedPlaylist={selectedPlaylist} setSelectedPlaylist={setSelectedPlaylist} />}
+                   </For>
+                </box>
+            </scrolledwindow>
+        </box>
+        <box $type="named" name={"list"} orientation={Gtk.Orientation.VERTICAL} vexpand>
+            <With value={selectedPlaylist}>
+                {playlist => !playlist ? <Astal.Bin /> :
+                <box orientation={Gtk.Orientation.VERTICAL}>
+                    <box>
+                        <IconButton className="" icon_name="carousel-arrow-back-symbolic" pixel_size={24} onClicked={() => {
+                            setSelectedPlaylist(null);
+                        }} />
+                        <label label={createBinding(playlist, "name")} hexpand />
+                        <PlaylistEditButton playlist={playlist} setSelectedPlaylist={setSelectedPlaylist} />
+                        <IconButton className="" icon_name="media-playback-start-symbolic" pixel_size={24} onClicked={() => {
+                            playlist.play();
+                        }} />
+                    </box>
+                    <scrolledwindow vexpand hexpand vscrollbarPolicy={Gtk.PolicyType.AUTOMATIC} hscrollbar_policy={Gtk.PolicyType.NEVER}>
+                        <box orientation={Gtk.Orientation.VERTICAL}>
+                            <For each={createBinding(playlist, "songs")}>
+                                {(song: KappashellMPD.Song, index) => 
+                                    <Astal.Bin onMap={(self) => {
+                                        self.set_child(<MPDSongElement song={song} index={index} currentPlaylist={selectedPlaylist} scrolledWindow={self.parent.parent as Gtk.ScrolledWindow} /> as Gtk.Widget);
+                                    }} />
+                                }
+                            </For>
+                        </box>
+                    </scrolledwindow>
+                </box>
+                }
+            </With>
+        </box>
+    </stack>
+}
+
+const addAction = (group: Gio.SimpleActionGroup, name: string, paramType: null | string, actionCallback: (arg0: GLib.Variant | null) => void) => {
+    try {
+        let action = null;
+        if(paramType) action = new Gio.SimpleAction({name, parameter_type: new GLib.VariantType(paramType)});
+        else action = new Gio.SimpleAction({name});
+
+        action.connect("activate", (_, param) => actionCallback(param));
+        group.add_action(action);
+    } catch(e) {
+        console.log(e);
+    }
+}
+
+function isWidgetVisibleInScrolledWindow(widget: Gtk.Widget, scrolledWindow: Gtk.ScrolledWindow) {
+    let allocation = widget.get_allocation();
+    let adj = scrolledWindow.get_vadjustment();
+    let viewportTop = adj.get_value();
+    let viewportBottom = viewportTop + adj.get_page_size();
+
+    // Simple vertical intersection check
+    return (
+        allocation.y + allocation.height > viewportTop &&
+        allocation.y < viewportBottom
+    );
+}
+
+function setupLazyAlbumArt(songWidget: Gtk.Widget, image: Gtk.Picture, song: KappashellMPD.Song, scrolledWindow: Gtk.ScrolledWindow) {
+    let loaded = false;
+
+    const tryLoad = async () => {
+        if (loaded) return;
+        if (isWidgetVisibleInScrolledWindow(songWidget, scrolledWindow)) {
+            loaded = true;
+            try {
+                await song.load_album_art();
+                image.set_paintable(song.album_art);
+            } catch(e) {
+                console.log(e);
+            }
+        }
+    };
+
+    // Re-check when scrolling or resizing happens
+    let vadj = scrolledWindow.get_vadjustment();
+    vadj.connect("value-changed", tryLoad);
+    songWidget.connect("map", tryLoad);
+}
+
+const MPDSongElement = ({song, currentPlaylist, index, scrolledWindow}: {song: KappashellMPD.Song, currentPlaylist?: Accessor<null | KappashellMPD.Playlist>, index: Accessor<number>, scrolledWindow: Gtk.ScrolledWindow}) => {
     const album_artist = createComputed([
         createBinding(song, "album"),
         createBinding(song, "artist"),
@@ -157,20 +287,111 @@ const MPDSongElement = ({song}: {song: KappashellMPD.Song}) => {
         return "Unknown Artist";
     })
 
-    return <box class="queue-item" hexpand vexpand={false} valign={Gtk.Align.START} spacing={10}>
+    const addToQueue = () => mpd.queue.add(song);
+    const playNext = () => mpd.queue.add(song, "+0");
+    const playNow = async () => {
+        await mpd.queue.add(song, "+0");
+        await mpd.next();
+    }
+    const addToPlaylist = async (playlist: GLib.Variant | null) => {
+        const pl = mpd.playlists.find(pl => pl.name === playlist?.get_string()[0] as string);
+
+        if(!pl) {
+            return await mpd.sendCommand("playlistadd", playlist?.get_string()[0] as string, song.file);
+        }
+        
+        pl.add_song(song);
+    }
+    const removeFromPlaylist = async () => {
+        if(!currentPlaylist) return;
+        const playlist = currentPlaylist.get();
+        if(!playlist) return;
+
+        playlist.remove_song(index.get());
+    }
+
+    const newPlaylistEntry = new Gtk.Entry();
+    newPlaylistEntry.set_placeholder_text("Enter playlist name");
+    newPlaylistEntry.connect("activate", (self) => {
+        addToPlaylist(GLib.Variant.new_string(self.text));
+        newPlaylistEntry.text = "";
+        const parent = newPlaylistEntry.parent.parent as Gtk.Popover;
+        parent.popdown();
+    });
+
+    const playlists = new Gio.Menu();
+    for(const playlist of mpd.playlists) {
+        playlists.append(playlist.name, `menu.add-to-playlist('${playlist.name}')`);
+    }
+
+    playlists.append("Create New Playlist", "menu.new-playlist");
+
+    mpd.connect("notify::playlists", () => {
+        playlists.remove_all();
+
+        for(const playlist of mpd.playlists) {
+            playlists.append(playlist.name, `menu.add-to-playlist('${playlist.name}')`);
+        }
+
+        playlists.append("Create New Playlist", "menu.new-playlist");
+    });
+
+    const model = new Gio.Menu();
+    model.append("Play Next", "menu.play-next");
+    model.append("Add To Queue", "menu.add-to-queue");
+    model.append("See Artist", "menu.artist");
+    model.append("See Album", "menu.album");
+
+    if(currentPlaylist) {
+        model.append("Remove from Playlist", "menu.remove-playlist");
+    } else {
+        model.append_submenu("Add to Playlist", playlists);
+    }
+
+    const popover = new Gtk.PopoverMenu();
+    popover.set_menu_model(model);
+
+    const picture = <Gtk.Picture content_fit={Gtk.ContentFit.COVER} can_shrink /> as Gtk.Picture;
+
+    const overlay = new Gtk.Overlay();
+    overlay.set_child(
+        <Gtk.AspectFrame ratio={1} halign={Gtk.Align.CENTER} valign={Gtk.Align.CENTER} height_request={20} class="album-art">
+            {picture}
+        </Gtk.AspectFrame> as Gtk.Widget 
+    );
+
+    const widget = <box class="queue-item" hexpand vexpand={false} valign={Gtk.Align.START} spacing={10} $={(self) => {
+        setupLazyAlbumArt(self, picture, song, scrolledWindow);
+    }}>
+        {overlay}
+        <box orientation={Gtk.Orientation.VERTICAL} margin_end={5}>
+            <IconButton className="" icon_name="list-add-symbolic" pixel_size={16} onClicked={addToQueue} />
+            <IconButton className="" icon_name="media-playback-start-symbolic" pixel_size={16} onClicked={playNow} />
+        </box>
         <box valign={Gtk.Align.CENTER} hexpand orientation={Gtk.Orientation.VERTICAL}>
             <WrappedMarqueeLabel label={song.title} cssClass="connectable-title" />
             <WrappedMarqueeLabel label={album_artist} />
         </box>
-        <box orientation={Gtk.Orientation.VERTICAL} margin_end={5}>
-            <IconButton className="" icon_name="list-add-symbolic" pixel_size={16} onClicked={() => {
-                mpd.queue.add(song.file);
-            }} />
-            <IconButton className="" icon_name="media-playback-start-symbolic" pixel_size={16} onClicked={() => {
-                mpd.queue.add(song.file, "+0");
-            }} />
-        </box>
+        <menubutton valign={Gtk.Align.CENTER} icon_name="ui-menu-symbolic" popover={popover} $={(self) => {
+            const newPlaylistPopover = new Gtk.Popover();
+            newPlaylistPopover.set_child(newPlaylistEntry);
+            newPlaylistPopover.set_parent(self);
+
+            const group = new Gio.SimpleActionGroup();
+            addAction(group, "add-to-playlist", "s", addToPlaylist)
+            addAction(group, "play-next", null, playNext);
+            addAction(group, "add-to-queue", null, addToQueue);
+            addAction(group, "new-playlist", null, () => {
+                newPlaylistPopover.popup();
+                popover.popdown();
+            })
+            addAction(group, "remove-playlist", null, removeFromPlaylist);
+
+            self.insert_action_group("menu", group);
+        }}/>
     </box>
+
+    return widget;
 }
 
 const MPDQueueElement = ({queue, song, current}: {queue: KappashellMPD.Queue, song: KappashellMPD.Song, current: Accessor<KappashellMPD.Song>}) => {
@@ -284,12 +505,9 @@ const MusicPageWithMDP = ({name}: {name: string}) => {
                 const vy = y - vadj.value;
                 const margin = 10;
                 const step = 20;
-                console.log(vy);
                 if (vy < margin) {
-                    console.log("Scroll up")
                     vadj.set_value(Math.max(vadj.get_lower(), vadj.get_value() - step));
                 } else if (vy > alloc.height - margin) {
-                    console.log("Scroll down")
                     vadj.set_value(Math.min(vadj.get_upper() - vadj.get_page_size(), vadj.get_value() + step));
                 }
 
@@ -337,7 +555,7 @@ const MusicPageWithMDP = ({name}: {name: string}) => {
 
     type BrowserStates = 'playlists' | 'albums' | 'artists' | 'tracks';
 
-    const [browser_page, set_browser_page] = createState<BrowserStates>("playlists")
+    const [browser_page, set_browser_page] = createState<BrowserStates>("tracks")
 
     const browser = <box orientation={Gtk.Orientation.VERTICAL} spacing={10}>
         <box hexpand class="top-subsubmenu-header">
@@ -348,7 +566,7 @@ const MusicPageWithMDP = ({name}: {name: string}) => {
             
         </box>
         <stack visible_child_name={browser_page}>
-            <TrackView $type="named" name="playlists" />
+            <PlaylistView $type="named" name="playlists" />
             <TrackView $type="named" name="albums" />
             <TrackView $type="named" name="artists" />
             <TrackView $type="named" name="tracks" />
@@ -361,7 +579,6 @@ const MusicPageWithMDP = ({name}: {name: string}) => {
                 mpd.queue.clear();
             }} />
             <IconButton vexpand className="" icon_name="settings-symbolic" pixel_size={24} onClicked={() => {
-                console.log("TODO");
             }} />
         </box>
     </box>

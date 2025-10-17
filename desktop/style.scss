@@ -27,6 +27,11 @@ window.Bar {
   );
 }
 
+.album-art * {
+    background: $accent-color;
+    border-radius: 15px;
+}
+
 .bar.left {
   padding: 15px 5px;
 }
