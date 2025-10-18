@@ -5,37 +5,63 @@ const glib = @import("glib");
 const gobject = @import("gobject");
 const gio = @import("gio");
 const gtk = @import("gtk");
+const gdk = @import("gdk");
 const astal = @import("astal");
 
+const bar = @import("window/bar.zig");
+
 pub fn main() void {
-    var app = gtk.Application.new("org.gtk.example", .{});
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    var allocator = gpa.allocator();
+    var app = gtk.Application.new("net.akeuben.kappashell", .{.handles_command_line = true,});
     defer app.unref();
-    _ = gio.Application.signals.activate.connect(app, ?*anyopaque, &activate, null, .{});
+    _ = gio.Application.signals.activate.connect(app, *std.mem.Allocator, &activate, &allocator, .{});
+    _ = gio.Application.signals.command_line.connect(app, *std.mem.Allocator, &commandLine, &allocator, .{});
     const status = gio.Application.run(app.as(gio.Application), @intCast(std.os.argv.len), std.os.argv.ptr);
     std.process.exit(@intCast(status));
 }
 
-fn activate(app: *gtk.Application, _: ?*anyopaque) callconv(.c) void {
-    var window = astal.Window.new();
-    window.setAnchor(.{.left = true, .bottom = true, .top = true});
-    window.setExclusivity(astal.Exclusivity.exclusive);
-    
-    var button = gtk.Button.new();
-    button.setLabel("Test");
-    
-    _ = gtk.Button.signals.clicked.connect(button, ?*anyopaque, &printHello, null, .{});
+fn activate(app: *gtk.Application, allocator: *std.mem.Allocator) callconv(.c) void {
+    const display = gdk.Display.getDefault() orelse unreachable;
+    const monitors = display.getMonitors();
 
-    gtk.Window.setChild(&window.f_parent_instance, button.as(gtk.Widget));
-    
-    app.addWindow(&window.f_parent_instance);
+    const monitor_count = monitors.getNItems();
 
-    gtk.Widget.show(window.as(gtk.Widget));
+    const cssProvider = gtk.CssProvider.new();
+
+    var env = std.process.getEnvMap(allocator.*) catch unreachable;
+    defer env.deinit();
+
+    std.debug.print("home: {s}", .{env.get("HOME") orelse "unknown"});
+
+    cssProvider.loadFromPath("desktop/style.css");
+    gtk.StyleContext.addProviderForDisplay(display, cssProvider.as(gtk.StyleProvider), gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+
+    for(0..monitor_count) |i| {
+        const monitor: *gdk.Monitor = @ptrCast(monitors.getItem(@intCast(i)) orelse unreachable);
+
+        bar.addLeftBar(app, monitor);
+        bar.addTopBar(app, monitor);
+        bar.addBottomBar(app, monitor);
+        bar.addRightBar(app, monitor);
+    }
+    
 }
+fn commandLine(app: *gtk.Application, cmd: *gio.ApplicationCommandLine, _: *std.mem.Allocator) callconv(.c) c_int {
+    if(cmd.getIsRemote() == 0) {
+        app.f_parent_instance.activate();
+        return 0;
+    }
+    
+    var argc: c_int = 0;
+    const argv = cmd.getArguments(&argc);
 
-fn printHello(_: *gtk.Button, _: ?*anyopaque) callconv(.c) void {
-    std.debug.print("Hello World\n", .{});
-}
+    cmd.printerr("The CLI interface in still WIP.\n");
 
-fn closeWindow(_: *gtk.Button, window: *gtk.ApplicationWindow) callconv(.c) void {
-    gtk.Window.destroy(window.as(gtk.Window));
+    for(0..@intCast(argc)) |i| {
+        const msg = argv[i];
+        std.log.debug("argument: {s}", .{msg});
+    }
+
+    return 0;
 }
