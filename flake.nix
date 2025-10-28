@@ -45,6 +45,10 @@
             pkgs.evolution-data-server
             pkgs.libadwaita
             pkgs.gtk4-layer-shell
+            pkgs.networkmanager
+            pkgs.libsoup_3
+            pkgs.json-glib
+            pkgs.libical
         ];
 
         # Join all dev outputs so we can access their GIR files

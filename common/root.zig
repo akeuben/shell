@@ -1,5 +1,2 @@
-const std = @import("std");
-
-pub fn testing() void {
-    std.debug.print("Hello, World!\n", .{});
-}
+pub const widget = @import("widget/root.zig");
+pub const config = @import("config.zig");

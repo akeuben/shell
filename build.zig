@@ -18,10 +18,15 @@ pub fn build(b: *std.Build) !void {
             .imports = &.{
                 use(gobject, "gtk", "gtk4"),
                 use(gobject, "gdk", "gdk4"),
+                use(gobject, "gsk", "gsk4"),
                 use(gobject, "gio", "gio2"),
                 use(gobject, "glib", "glib2"),
                 use(gobject, "gobject", "gobject2"),
                 use(gobject, "astal", "astal4"),
+                use(gobject, "cairo", "cairo1"),
+                use(gobject, "hyprland", "astalhyprland0"),
+                use(gobject, "bluetooth", "astalbluetooth0"),
+                use(gobject, "network", "astalnetwork0"),
             }
         })
     });
@@ -37,10 +42,15 @@ pub fn build(b: *std.Build) !void {
                 .{ .name = "common", .module = common.root_module },
                 use(gobject, "gtk", "gtk4"),
                 use(gobject, "gdk", "gdk4"),
+                use(gobject, "gsk", "gsk4"),
                 use(gobject, "gio", "gio2"),
                 use(gobject, "glib", "glib2"),
                 use(gobject, "gobject", "gobject2"),
                 use(gobject, "astal", "astal4"),
+                use(gobject, "cairo", "cairo1"),
+                use(gobject, "hyprland", "astalhyprland0"),
+                use(gobject, "bluetooth", "astalbluetooth0"),
+                use(gobject, "network", "astalnetwork0"),
             },
         }),
     });
