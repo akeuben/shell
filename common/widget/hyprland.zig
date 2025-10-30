@@ -27,6 +27,7 @@ pub const WorkspacesWidget = struct {
     
     pub fn init(base: *widget.WidgetBase, self: *WorkspacesWidget, params: *const WorkspacesParams, details: widget.InitializationDetails) void {
         self.root = gtk.Box.new(details.orientation, 10);
+        self.root.f_parent_instance.addCssClass("bar-item");
         self.base = base;
         self.indicators = null;
         if(params.class) |class|

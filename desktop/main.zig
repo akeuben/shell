@@ -5,91 +5,113 @@ const gio = @import("gio");
 const gtk = @import("gtk");
 const gdk = @import("gdk");
 const astal = @import("astal");
+const BottomMenu = @import("window/bottom.zig").BottomMenu;
 
 const bar = @import("window/bar.zig");
 const config = @import("config.zig");
 
-fn handleSigInt(_: c_int) callconv(.c) void {
-    if(mainApp) |app| {
-        gio.Application.quit(app.as(gio.Application));
-    }
-}
+const Application = struct {
+    configManager: *config.ConfigManager(?*anyopaque),
+    app: *gtk.Application,
+    allocator: *std.mem.Allocator,
+    bottomMenu: *BottomMenu,
 
-pub fn main() void {
-    const action = std.posix.Sigaction{
-        .handler = .{ .handler = handleSigInt },
-        .flags = 0,
-        .mask = std.posix.sigemptyset(),
-    };
-    std.posix.sigaction(std.posix.SIG.INT, &action, null);
+    pub fn init(allocator: *std.mem.Allocator) *Application {
+        const self = allocator.create(Application) catch unreachable;
+        self.allocator = allocator;
+        self.app = gtk.Application.new("net.akeuben.kappashell", .{.handles_command_line = true,});
+        _ = gio.Application.signals.activate.connect(self.app, *Application, &activate, self, .{});
+        _ = gio.Application.signals.command_line.connect(self.app, *Application, &commandLine, self, .{});
 
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    var allocator = gpa.allocator();
-    var app = gtk.Application.new("net.akeuben.kappashell", .{.handles_command_line = true,});
-    defer app.unref();
-    _ = gio.Application.signals.activate.connect(app, *std.mem.Allocator, &activate, &allocator, .{});
-    _ = gio.Application.signals.command_line.connect(app, *std.mem.Allocator, &commandLine, &allocator, .{});
-    const status = gio.Application.run(app.as(gio.Application), @intCast(std.os.argv.len), std.os.argv.ptr);
-    std.log.debug("Exiting...\n", .{});
-    std.process.exit(@intCast(status));
-}
-
-var configManager: *config.ConfigManager(?*anyopaque) = undefined;
-var mainApp: ?*gtk.Application = null;
-
-fn activate(app: *gtk.Application, allocator: *std.mem.Allocator) callconv(.c) void {
-    const display = gdk.Display.getDefault() orelse unreachable;
-    const monitors = display.getMonitors();
-
-    mainApp = app;
-    
-    barSets = std.ArrayList(*bar.MonitorWindows).empty;
-
-    const monitor_count = monitors.getNItems();
-
-    const cssProvider = gtk.CssProvider.new();
-
-    var env = std.process.getEnvMap(allocator.*) catch unreachable;
-    defer env.deinit();
-
-    cssProvider.loadFromPath("desktop/style.css");
-    gtk.StyleContext.addProviderForDisplay(display, cssProvider.as(gtk.StyleProvider), gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
-
-    configManager = config.ConfigManager(?*anyopaque).init(allocator, null, &onNewConfig);
-    const intitialConfig = configManager.readConfig();
-
-    for(0..monitor_count) |i| {
-        const monitor: *gdk.Monitor = @ptrCast(monitors.getItem(@intCast(i)) orelse unreachable);
-
-         barSets.append(allocator.*, bar.MonitorWindows.init(app, monitor, allocator, &intitialConfig.widgets) catch @panic("Failed to init windows for monitor")) catch unreachable;
+        return self;
     }
 
-    configManager.manualUpdate();
-}
-
-var barSets: std.ArrayList(*bar.MonitorWindows) = undefined;
-
-fn onNewConfig(_: ?*anyopaque, cfg: *const config.Config) void {
-    for(barSets.items) |barSet| {
-        barSet.updateBarWidgets(&cfg.widgets);
+    pub fn run(self: *Application) c_int {
+        return gio.Application.run(self.app.as(gio.Application), @intCast(std.os.argv.len), std.os.argv.ptr);
     }
-}
 
-fn commandLine(app: *gtk.Application, cmd: *gio.ApplicationCommandLine, _: *std.mem.Allocator) callconv(.c) c_int {
-    if(cmd.getIsRemote() == 0) {
-        app.f_parent_instance.activate();
+    fn activate(app: *gtk.Application, self: *Application) callconv(.c) void {
+        const display = gdk.Display.getDefault() orelse unreachable;
+        const monitors = display.getMonitors();
+        
+        barSets = std.ArrayList(*bar.MonitorWindows).empty;
+
+        const monitor_count = monitors.getNItems();
+
+        const cssProvider = gtk.CssProvider.new();
+
+        var env = std.process.getEnvMap(self.allocator.*) catch unreachable;
+        defer env.deinit();
+
+        cssProvider.loadFromPath("desktop/style.css");
+        gtk.StyleContext.addProviderForDisplay(display, cssProvider.as(gtk.StyleProvider), gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+
+        self.configManager = config.ConfigManager(?*anyopaque).init(self.allocator, null, &onNewConfig);
+        const intitialConfig = self.configManager.readConfig();
+
+        for(0..monitor_count) |i| {
+            const monitor: *gdk.Monitor = @ptrCast(monitors.getItem(@intCast(i)) orelse unreachable);
+
+             barSets.append(self.allocator.*, bar.MonitorWindows.init(app, monitor, self.allocator, &intitialConfig.widgets, @ptrCast(self), &onResize) catch @panic("Failed to init windows for monitor")) catch unreachable;
+        }
+
+        self.bottomMenu = BottomMenu.init(self.allocator);
+
+        self.configManager.manualUpdate();
+    }
+
+    fn onResize(selfRaw: *anyopaque, top: c_int, left: c_int, right: c_int, bottom: c_int) void {
+        const self: *Application = @alignCast(@ptrCast(selfRaw));
+
+        self.bottomMenu.window.setMarginTop(top);
+        self.bottomMenu.window.setMarginLeft(left);
+        self.bottomMenu.window.setMarginRight(right);
+        self.bottomMenu.window.setMarginBottom(bottom);
+    }
+
+    var barSets: std.ArrayList(*bar.MonitorWindows) = undefined;
+
+    fn onNewConfig(_: ?*anyopaque, cfg: *const config.Config) void {
+        for(barSets.items) |barSet| {
+            barSet.updateBarWidgets(&cfg.widgets);
+        }
+    }
+
+    fn commandLine(app: *gtk.Application, cmd: *gio.ApplicationCommandLine, self: *Application) callconv(.c) c_int {
+        if(cmd.getIsRemote() == 0) {
+            app.f_parent_instance.activate();
+            return 0;
+        }
+        
+        var argc: usize = 0;
+        const argv = cmd.getArguments(@ptrCast(&argc));
+
+        cmd.printerr("The CLI interface in still WIP.\n");
+
+        if(argc != 2) 
+            cmd.printerr("Please specify an action");
+
+        if(std.mem.eql(u8, std.mem.span(argv[1]), "runner")) {
+            self.bottomMenu.openRunner(self.app);
+        }
+
+        if(std.mem.eql(u8, std.mem.span(argv[1]), "close")) {
+            self.bottomMenu.close();
+        }
+
         return 0;
     }
+};
+
+pub fn main() void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    var allocator = gpa.allocator();
+    const application = Application.init(&allocator);
+
+    const status = application.run();
+
+    std.log.debug("Exiting...\n", .{});
+    std.process.exit(@intCast(status));
     
-    var argc: c_int = 0;
-    const argv = cmd.getArguments(&argc);
-
-    cmd.printerr("The CLI interface in still WIP.\n");
-
-    for(0..@intCast(argc)) |i| {
-        const msg = argv[i];
-        std.log.debug("argument: {s}", .{msg});
-    }
-
-    return 0;
 }
+

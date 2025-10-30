@@ -6,11 +6,34 @@
 
 
 .bar {
-    background: @window_bg_color;
+    background: @bg-color;
+}
+
+.menu {
+    background: @bg-color;
+    padding: 20px;
+}
+
+.menu.bottom {
+    border-radius: 16px 16px 0px 0px;
+}
+
+.runner {
+    min-width: 500px;
 }
 
 .bar.contentful>* {
     padding: 10px;
+}
+
+.runner-result {
+    background: @base-color;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.runner-result.selected {
+    outline: 2px solid @accent-color;
 }
 
 .inverted_corner {
@@ -27,7 +50,7 @@
     color: @accent_color;
 }
 
-.indicators {
+.bar-item {
     background: @base-color;
     padding: 15px 10px;
     border-radius: 500px;
@@ -36,7 +59,7 @@
 
 .hypr-workspace {
     all: unset;
-    background: @base-color;
+    background: @subbase-color;
     border-radius: 50px;
     padding: 0px;
     margin: 0px;

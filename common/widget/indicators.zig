@@ -33,7 +33,7 @@ pub const Widget = struct {
         self.root = gtk.Box.new(details.orientation, 10);
         self.root.f_parent_instance.setHexpand(0);
         self.root.f_parent_instance.setHalign(.center);
-        self.root.f_parent_instance.addCssClass("indicators");
+        self.root.f_parent_instance.addCssClass("bar-item");
         self.networkIndicator = null;
         self.bluetoothIndicator = null;
 

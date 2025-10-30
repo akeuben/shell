@@ -27,13 +27,14 @@ pub fn build(b: *std.Build) !void {
                 use(gobject, "hyprland", "astalhyprland0"),
                 use(gobject, "bluetooth", "astalbluetooth0"),
                 use(gobject, "network", "astalnetwork0"),
+                use(gobject, "apps", "astalapps0"),
             }
         })
     });
     common.linkSystemLibrary("gtk4-layer-shell");
 
     const desktop = b.addExecutable(.{
-        .name = "shell_zig",
+        .name = "kappashell-desktop",
         .root_module = b.createModule(.{
             .root_source_file = b.path("desktop/main.zig"),
             .target = target,
@@ -51,6 +52,7 @@ pub fn build(b: *std.Build) !void {
                 use(gobject, "hyprland", "astalhyprland0"),
                 use(gobject, "bluetooth", "astalbluetooth0"),
                 use(gobject, "network", "astalnetwork0"),
+                use(gobject, "apps", "astalapps0"),
             },
         }),
     });

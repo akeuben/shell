@@ -5,7 +5,7 @@ const gio = @import("gio");
 const gtk = @import("gtk");
 const gdk = @import("gdk");
 const astal = @import("astal");
-const coner = @import("../widget/inverted_corner.zig");
+const coner = @import("common");
 const widget = @import("common").widget;
 const gsk = @import("gsk");
 const cairo = @import("cairo");
@@ -211,9 +211,12 @@ pub const MonitorWindows = struct {
     monitor: *gdk.Monitor,
 
     signals: [8]c_ulong,
+
+    context: *anyopaque,
+    callback: *const fn (*anyopaque, top: c_int, left: c_int, right: c_int, bottom: c_int) void,
     
 
-    pub fn init(app: *gtk.Application, monitor: *gdk.Monitor, allocator: *std.mem.Allocator, initialConfig: *const WidgetConfig) !*MonitorWindows {
+    pub fn init(app: *gtk.Application, monitor: *gdk.Monitor, allocator: *std.mem.Allocator, initialConfig: *const WidgetConfig, context: *anyopaque, resizeCallback: *const fn (*anyopaque, top: c_int, left: c_int, right: c_int, bottom: c_int) void) !*MonitorWindows {
         const self = try allocator.create(MonitorWindows);
         self.app = app;
         self.monitor = monitor;
@@ -232,6 +235,8 @@ pub const MonitorWindows = struct {
 
         self.corners = addCorners(monitor);
 
+        self.context = context;
+        self.callback = resizeCallback;
 
         self.addResizeHandler(0, self.topWindow.window);
         self.addResizeHandler(1, self.bottomWindow.window);
@@ -266,7 +271,6 @@ pub const MonitorWindows = struct {
     }
 
     fn updateMargins(self: *MonitorWindows) callconv(.c) void {
-
         const topMargin = self.topWindow.window.f_parent_instance.f_parent_instance.getSize(gtk.Orientation.vertical);
         const bottomMargin = self.bottomWindow.window.f_parent_instance.f_parent_instance.getSize(gtk.Orientation.vertical);
         const leftMargin = self.leftWindow.window.f_parent_instance.f_parent_instance.getSize(gtk.Orientation.horizontal);
@@ -276,5 +280,7 @@ pub const MonitorWindows = struct {
         self.corners.setMarginRight(rightMargin);
         self.corners.setMarginTop(topMargin - 2);
         self.corners.setMarginBottom(bottomMargin);
+
+        self.callback(self.context, topMargin, leftMargin, rightMargin, bottomMargin);
     }
 };

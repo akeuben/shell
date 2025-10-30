@@ -24,6 +24,13 @@ pub const InvertedCorner = extern struct {
         corner: Corner,
         radius: u32,
 
+        start: f32,
+        diff: i32,
+
+        from: u32,
+        duration: f32,
+        tick: ?c_uint,
+
         var offset: c_int = 0;
     };
 
@@ -46,6 +53,46 @@ pub const InvertedCorner = extern struct {
 
     pub fn as(self: *InvertedCorner, comptime T: type) *T {
         return gobject.ext.as(T, self);
+    }
+
+    pub fn setRadius(self: *InvertedCorner, radius: u32) void {
+        self.private().radius = radius;
+        self.parent_instance.setContentWidth(@intCast(radius));
+        self.parent_instance.setContentHeight(@intCast(radius));
+
+        self.parent_instance.f_widget.queueResize();
+        self.parent_instance.f_widget.queueDraw();
+    }
+
+    pub fn setRadiusAnimated(self: *InvertedCorner, radius: u32, duration: f32) void {
+        self.private().start = @as(f32, @floatFromInt(glib.getMonotonicTime())) / 1.0E6;
+        self.private().diff = @as(i32, @intCast(radius)) - @as(i32, @intCast(self.private().radius));
+        self.private().duration = duration;
+        self.private().from = self.private().radius;
+
+        if(self.private().tick) |tick| {
+            self.parent_instance.f_widget.removeTickCallback(tick);
+        }
+        
+        self.private().tick = self.parent_instance.f_widget.addTickCallback(&onAnimateCallback, @ptrCast(self), null);
+    }
+
+    fn onAnimateCallback(_: *gtk.Widget, _: *gdk.FrameClock, selfRaw: ?*anyopaque) callconv(.c) c_int {
+        const self: *InvertedCorner = @alignCast(@ptrCast(selfRaw));
+        const time = @as(f32, @floatFromInt(glib.getMonotonicTime())) / 1.0E6;
+
+        const elapsed = time - self.private().start;
+
+        const t = @min(1.0, elapsed / self.private().duration);
+
+        const radius: u32 = @intFromFloat(@as(f32, @floatFromInt(self.private().from)) + @as(f32, @floatFromInt(self.private().diff)) * t);
+
+        self.setRadius(radius);
+
+        if(t >= 1) {
+            return @intFromBool(glib.SOURCE_REMOVE);
+        }
+        return @intFromBool(glib.SOURCE_CONTINUE);
     }
 
     pub fn snapshotImpl(self: *InvertedCorner, snapshot: *gtk.Snapshot) callconv(.c) void {

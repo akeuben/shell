@@ -33,7 +33,7 @@
     // internet connectivity.
     .dependencies = .{
         .gobject = .{
-            .path = "lib/zig-gobject/zig-out/bindings",
+            .path = "bindings",
         },
     },
     .paths = .{

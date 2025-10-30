@@ -60,34 +60,49 @@
     in {
         packages.${system} = {
             desktop = pkgs.stdenv.mkDerivation {
-                name = "kappashell-desktop";
+                pname = "kappashell-desktop";
+                version = "1.0";
+                src = ./.;
 
-                src = ./desktop;
-
-                nativeBuildInputs = with pkgs; [
-                    gobject-introspection
-                    zig_0_15
-                    wrapGAppsHook
-                    pkg-config
-                    libxslt
-                    gtk4-layer-shell
+                zigBuildFlags = [
+                    "-Doptimize=Debug"
                 ];
 
-                buildInputs = girInputs;
+                nativeBuildInputs = with pkgs; [
+                    zig_0_15
+                    pkg-config
+                    libxslt
+                    makeWrapper
+                    wayland
+                    wrapGAppsHook
+                    gobject-introspection
+                ];
+
+                buildInputs = [
+                    pkgs.gobject-introspection
+                    pkgs.evolution-data-server
+                    icon-theme-browser.packages.${system}.default
+                    pkgs.wayland
+                    pkgs.libxslt
+                    pkgs.gtk4-layer-shell
+                ] ++ girInputs;
 
                 preBuild = ''
-          export EXTRA_GIR_DIRS="${girDirs}/share/gir-1.0"
-          export GI_TYPELIB_PATH="${girDirs}/lib/girepository-1.0"
-          echo "[build] Set EXTRA_GIR_DIRS=$EXTRA_GIR_DIRS"
-          echo "[build] Set GI_TYPELIB_PATH=$GI_TYPELIB_PATH"
-          '';
+                export EXTRA_GIR_DIRS="${girDirs}/share/gir-1.0"
+                export GI_TYPELIB_PATH="${girDirs}/lib/girepository-1.0"
+                '';
 
-                # Replace with your actual build/install logic
+                buildPhase = ''
+                    export ZIG_GLOBAL_CACHE_DIR=$TMPDIR/.zig-cache
+                    ls
+                    zig build 
+                '';
+
                 installPhase = ''
-          mkdir -p $out/bin
-          echo "No build logic defined yet." > $out/bin/kappashell-desktop
-          chmod +x $out/bin/kappashell-desktop
-          '';
+                    mkdir -p $out/bin
+                    cp ./zig-out/bin/kappashell-desktop $out/bin
+                '';
+
             };
         };
 
@@ -109,13 +124,9 @@
                 ];
 
                 shellHook = ''
-          export EXTRA_GIR_DIRS="${girDirs}/share/gir-1.0"
-          export GI_TYPELIB_PATH="${girDirs}/lib/girepository-1.0"
-          echo "[devShell] Set EXTRA_GIR_DIRS=$EXTRA_GIR_DIRS"
-          echo "[devShell] Set GI_TYPELIB_PATH=$GI_TYPELIB_PATH"
-          export LD_LIBRARY_PATH=${pkgs.lib.makeLibraryPath girInputs}:$LD_LIBRARY_PATH
-          export PKG_CONFIG_PATH=${pkgs.lib.makeLibraryPath girInputs}:$LD_LIBRARY_PATH
-          '';
+                export EXTRA_GIR_DIRS="${girDirs}/share/gir-1.0"
+                export GI_TYPELIB_PATH="${girDirs}/lib/girepository-1.0"
+                '';
             };
         };
     };
