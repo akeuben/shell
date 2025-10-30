@@ -47,8 +47,8 @@ pub const Power = struct {
         self.root.f_parent_instance.setVexpand(1);
         self.root.f_parent_instance.setHexpand(1);
 
-        const shutdownBtn = IconButton.new("system-shutdown-symbolic", .{ .icon_size = 28}, self, &sleep);
-        const restartBtn = IconButton.new("system-reboot-symbolic", .{}, self, &sleep);
+        const shutdownBtn = IconButton.new("system-shutdown-symbolic", .{ .icon_size = 28}, self, &shutdown);
+        const restartBtn = IconButton.new("system-reboot-symbolic", .{}, self, &restart);
         const sleepBtn = IconButton.new("lock-symbolic", .{}, self, &sleep);
         const cancelBtn = IconButton.new("close-symbolic", .{}, self, &close);
 
@@ -63,6 +63,18 @@ pub const Power = struct {
     fn sleep(_: *gtk.Button, self: *Power) callconv(.c) void {
         self.closeCallback(self.menu);
         var child = std.process.Child.init(&.{"systemctl", "sleep"}, self.allocator.*);
+        std.process.Child.spawn(&child) catch unreachable;
+    }
+
+    fn restart(_: *gtk.Button, self: *Power) callconv(.c) void {
+        self.closeCallback(self.menu);
+        var child = std.process.Child.init(&.{"systemctl", "reboot"}, self.allocator.*);
+        std.process.Child.spawn(&child) catch unreachable;
+    }
+
+    fn shutdown(_: *gtk.Button, self: *Power) callconv(.c) void {
+        self.closeCallback(self.menu);
+        var child = std.process.Child.init(&.{"systemctl", "poweroff"}, self.allocator.*);
         std.process.Child.spawn(&child) catch unreachable;
     }
 
