@@ -13,6 +13,8 @@ const WidgetConfig = @import("../config.zig").WidgetConfig;
 const BarConfig = @import("../config.zig").BarConfig;
 const widgets = @import("../widgets.zig");
 
+const Application = @import("root").Application;
+
 fn addBar(monitor: *gdk.Monitor, anchor: astal.WindowAnchor, allocator: *std.mem.Allocator, orientation: gtk.Orientation) *Window {
     var window = astal.Window.new();
     window.setAnchor(anchor);
@@ -141,7 +143,12 @@ pub const Window = struct {
         const middleBox = gtk.Box.new(self.orientation, config.spacing);
         const endBox = gtk.Box.new(self.orientation, config.spacing);
 
-        const details: widget.InitializationDetails = .{ .monitor = self.monitor, .orientation = self.orientation, .spacing = config.spacing };
+        const details: widget.InitializationDetails = .{ 
+            .monitor = self.monitor, 
+            .orientation = self.orientation, 
+            .spacing = config.spacing,
+            .requestHandler = &handleRequest,
+        };
         
         for(config.start, 0..) |wconfig, i| {
             const w = widgets.mapWidgetConfigToWidget(self.allocator, wconfig, details) catch {
@@ -175,6 +182,12 @@ pub const Window = struct {
         center.setEndWidget(endBox.as(gtk.Widget));
 
         self.window.f_parent_instance.setChild(center.as(gtk.Widget));
+    }
+
+    fn handleRequest(request: [:0]const u8) void {
+        if(Application.instance) |app| {
+            app.handleRequest(request);
+        }
     }
 
     fn cleanupWidgets(self: *Window) void {

@@ -2,6 +2,7 @@ pub const clock = @import("clock.zig");
 pub const indicators = @import("indicators.zig");
 pub const icon = @import("icon.zig");
 pub const hyprland = @import("hyprland.zig");
+pub const power_button = @import("power_button.zig");
 
 const std = @import("std");
 const gtk = @import("gtk");
@@ -22,6 +23,7 @@ pub const InitializationDetails = struct {
     orientation: gtk.Orientation,
     spacing: c_int,
     monitor: *gdk.Monitor,
+    requestHandler: *const fn ([:0]const u8) void,
 };
 
 pub const WidgetBase = struct {

@@ -10,11 +10,13 @@ const BottomMenu = @import("window/bottom.zig").BottomMenu;
 const bar = @import("window/bar.zig");
 const config = @import("config.zig");
 
-const Application = struct {
+pub const Application = struct {
     configManager: *config.ConfigManager(?*anyopaque),
     app: *gtk.Application,
     allocator: *std.mem.Allocator,
     bottomMenu: *BottomMenu,
+
+    pub var instance: ?*Application = null;
 
     pub fn init(allocator: *std.mem.Allocator) *Application {
         const self = allocator.create(Application) catch unreachable;
@@ -22,6 +24,8 @@ const Application = struct {
         self.app = gtk.Application.new("net.akeuben.kappashell", .{.handles_command_line = true,});
         _ = gio.Application.signals.activate.connect(self.app, *Application, &activate, self, .{});
         _ = gio.Application.signals.command_line.connect(self.app, *Application, &commandLine, self, .{});
+
+        instance = self;
 
         return self;
     }
@@ -91,15 +95,23 @@ const Application = struct {
         if(argc != 2) 
             cmd.printerr("Please specify an action");
 
-        if(std.mem.eql(u8, std.mem.span(argv[1]), "runner")) {
+        self.handleRequest(std.mem.span(argv[1]));
+
+        return 0;
+    }
+
+    pub fn handleRequest(self: *Application, request: [:0]const u8) void {
+        if(std.mem.eql(u8, request, "runner")) {
             self.bottomMenu.openRunner(self.app);
         }
 
-        if(std.mem.eql(u8, std.mem.span(argv[1]), "close")) {
-            self.bottomMenu.close();
+        if(std.mem.eql(u8, request, "power")) {
+            self.bottomMenu.openPower(self.app);
         }
 
-        return 0;
+        if(std.mem.eql(u8, request, "close")) {
+            self.bottomMenu.close();
+        }
     }
 };
 

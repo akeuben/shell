@@ -10,5 +10,6 @@ pub fn mapWidgetConfigToWidget(allocator: *std.mem.Allocator, cfg: config.Config
         .indicators => |a| widget.wrapDefineComponent(widget.indicators.Indicators, try widget.indicators.Indicators.init(allocator, a, details)),
         .icon => |a| widget.wrapDefineComponent(widget.icon.Icon, try widget.icon.Icon.init(allocator, a, details)),
         .hyprland_workspaces => |a| widget.wrapDefineComponent(widget.hyprland.HyprlandWorkspaces, try widget.hyprland.HyprlandWorkspaces.init(allocator, a, details)),
+        .power_button => |a| widget.wrapDefineComponent(widget.power_button.PowerButton, try widget.power_button.PowerButton.init(allocator, a, details)),
     };
 }

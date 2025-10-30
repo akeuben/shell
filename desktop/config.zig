@@ -7,6 +7,7 @@ const clock = @import("common").widget.clock;
 const indicators = @import("common").widget.indicators;
 const icon = @import("common").widget.icon;
 const hyprland = @import("common").widget.hyprland;
+const power_button = @import("common").widget.power_button;
 
 pub const BarConfig = struct {
     start: []const ConfigWidgetConfig = &.{},
@@ -27,6 +28,7 @@ pub const ConfigWidgetConfig = union(enum) {
     indicators: indicators.Params,
     icon: icon.Params,
     hyprland_workspaces: hyprland.WorkspacesParams,
+    power_button: power_button.Params,
 };
 
 pub const WidgetConfig = struct {

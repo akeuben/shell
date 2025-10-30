@@ -24,6 +24,7 @@ pub fn readFile(allocator: *std.mem.Allocator, file: *gio.File, comptime T: type
     var diagnostics: std.zon.parse.Diagnostics = .{};
 
     // Parse with diagnostics
+    @setEvalBranchQuota(5000);
     const result = std.zon.parse.fromSlice(T, allocator.*, contentSlice, &diagnostics, .{.ignore_unknown_fields = true}) catch {
         var stdout_buffer: [1024]u8 = undefined;
         var stdout = std.fs.File.stdout().writer(&stdout_buffer).interface;

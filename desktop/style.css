@@ -11,7 +11,12 @@
 
 .menu {
     background: @bg-color;
-    padding: 20px;
+    padding: 10px;
+}
+
+.menu-window {
+    background: #00000033;
+    border-radius: 35px;
 }
 
 .menu.bottom {
@@ -20,6 +25,10 @@
 
 .runner {
     min-width: 500px;
+}
+
+.runner entry {
+    padding: 10px;
 }
 
 .bar.contentful>* {
@@ -69,4 +78,15 @@
 
 .hypr-workspace.active {
     background: @accent_color;
+}
+
+button {
+    unset: all;
+    background: transparent;
+    border-radius: 1000px;
+    padding: 5px;
+}
+
+button:hover {
+    background: @base-color;
 }
