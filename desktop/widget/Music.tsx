@@ -5,8 +5,9 @@ import { Accessor, createBinding, createComputed, createState, For, With } from 
 import { WrappedMarqueeLabel } from "./Marquee";
 import { IconButton } from "./IconButton";
 import { KappashellMPD } from "../lib/mpd/mpd";
-import { Gio, GLib } from "astal";
 import { pointer } from "../util/cursor";
+import Gio from "gi://Gio?version=2.0";
+import GLib from "gi://GLib?version=2.0";
 
 
 const mpris = AstalMpris.get_default();
