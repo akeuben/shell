@@ -1,11 +1,7 @@
 #!/usr/bin/env bash
 cd lib/zig-gobject 
 
-# Find all .gir files in $EXTRA_GIR_DIRS and extract just the filename without the path
 modules=($(find "$EXTRA_GIR_DIRS" -maxdepth 1 -name '*.gir' -printf '%f\n'))
-
-# If the .gir filenames include the .gir extension and you want them removed:
-# modules=("${modules[@]/%.gir/}")
 
 module_flags=()
 for m in "${modules[@]}"; do
