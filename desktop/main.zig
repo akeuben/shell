@@ -61,6 +61,8 @@ pub const Application = struct {
 
         self.bottomMenu = BottomMenu.init(self.allocator);
 
+        _ = gio.ListModel.signals.items_changed.connect(monitors, *Application, &onMonitorsChanged, self, .{});
+
         self.configManager.manualUpdate();
     }
 
@@ -73,9 +75,91 @@ pub const Application = struct {
         self.bottomMenu.window.setMarginBottom(bottom);
     }
 
+    const MonitorChangedData = struct {
+        self: *Application,
+        position: usize,
+        added: usize,
+        list: *gio.ListModel,
+    };
+
+    fn onMonitorsChanged(list: *gio.ListModel, position: u32, removed: u32, added: u32, self: *Application) callconv(.c) void {
+        const monCount = list.getNItems();
+
+        std.log.debug("Monitor list changed. Position = {}, added = {}, removed = {}", .{position, added, removed});
+
+        // Handle Removed Monitors
+        if(removed > 0) {
+            var monitors = std.AutoHashMap(*gdk.Monitor, void).init(self.allocator.*);
+            defer monitors.deinit();
+
+            for(0..monCount) |i| {
+                if (list.getItem(@intCast(i))) |obj| {
+                    monitors.put(@ptrCast(obj), {}) catch unreachable;
+                }
+            }
+
+            var i: usize = barSets.items.len;
+            while(i > 0) {
+                i -= 1;
+
+                const bars = barSets.items[i];
+                if(!monitors.contains(bars.monitor)) {
+                    bars.deinit();
+                    _ = barSets.swapRemove(i);
+                }
+            }
+        }
+
+        const data = self.allocator.create(MonitorChangedData) catch unreachable;
+        data.self = self;
+        data.position = position;
+        data.added = added;
+        data.list = list;
+
+        // Handle added monitors
+        if(added > 0) {
+            _ = glib.timeoutAdd(100, &refreshWidgets, data);
+        }
+    }
+
+    fn refreshWidgets(raw: ?*anyopaque) callconv(.c) c_int {
+
+        const data: ?*MonitorChangedData = @alignCast(@ptrCast(raw));
+        
+        const self = data.?.self;
+        const position = data.?.position;
+        const added = data.?.added;
+        const list = data.?.list;
+
+        for(position .. position + added) |i| {
+            const monitor: *gdk.Monitor = @ptrCast(list.getItem(@intCast(i)) orelse unreachable);
+
+            if(monitor.getConnector() == null) {
+                return @intFromBool(glib.SOURCE_CONTINUE);
+            }
+        }
+
+        defer self.allocator.destroy(data.?);
+        
+        const intitialConfig = self.configManager.readConfig();
+        for(position .. position + added) |i| {
+            const monitor: *gdk.Monitor = @ptrCast(list.getItem(@intCast(i)) orelse unreachable);
+
+            var geom: gdk.Rectangle = undefined;
+
+            monitor.getGeometry(&geom);
+
+            barSets.append(self.allocator.*, bar.MonitorWindows.init(self.app, monitor, self.allocator, &intitialConfig.widgets, @ptrCast(self), &onResize) catch @panic("Failed to init windows for monitor")) catch unreachable;
+        }
+
+        self.configManager.manualUpdate();
+        return @intFromBool(glib.SOURCE_REMOVE);
+    }
+
     var barSets: std.ArrayList(*bar.MonitorWindows) = undefined;
 
     fn onNewConfig(_: ?*anyopaque, cfg: *const config.Config) void {
+        std.log.debug("Monitor count: {}", .{barSets.items.len});
         for(barSets.items) |barSet| {
             barSet.updateBarWidgets(&cfg.widgets);
         }

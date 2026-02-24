@@ -52,6 +52,7 @@ in
             pkgs.pkg-config
             pkgs.libxslt
             pkgs.gtk4-layer-shell
+            pkgs.gdb
         ] ++ girInputs;
 
         nativeBuildInputs = [

@@ -13,9 +13,9 @@ const SignalEntry = struct {
     handler_id: c_ulong,
     obj: *gobject.Object,
 
-
     pub fn disconnect(self: SignalEntry) void {
-        gobject.signalHandlerDisconnect(self.obj, self.handler_id);
+        _ = self;
+        //gobject.signalHandlerDisconnect(self.obj, self.handler_id);
     }
 };
 
@@ -54,7 +54,7 @@ pub const WidgetBase = struct {
     ) void {
         for(self.signals.items, 0..) |signal, i| {
             if(signal.handler_id == id) {
-                gobject.signalHandlerDisconnect(signal.obj, signal.handler_id);
+                //gobject.signalHandlerDisconnect(signal.obj, signal.handler_id);
                 _ = self.signals.orderedRemove(i);
             }
         }
@@ -79,9 +79,7 @@ pub const WidgetBase = struct {
     }
 
     pub fn deinit(self: WidgetBase) void {
-        for(self.signals.items) |signal| {
-            gobject.signalHandlerDisconnect(signal.obj, signal.handler_id);
-        }
+        _ = self;
     }
 };
 

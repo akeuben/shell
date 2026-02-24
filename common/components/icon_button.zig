@@ -50,6 +50,7 @@ pub const IconButton = struct {
     }
 
     pub fn deinit(self: *const IconButton) void {
-        gobject.signalHandlerDisconnect(self.button.as(gobject.Object), self.id);
+        _ = self;
+        //gobject.signalHandlerDisconnect(self.button.as(gobject.Object), self.id);
     }
 };

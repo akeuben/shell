@@ -5,7 +5,8 @@ fn use(gobject: *std.Build.Dependency, name: []const u8, target: []const u8) std
 }
 
 pub fn build(b: *std.Build) !void {
-    const target = b.standardTargetOptions(.{});
+    //const target = b.standardTargetOptions(.{});
+    const target = b.resolveTargetQuery(.{ .cpu_model = .baseline, .cpu_arch = .x86_64 });
     const optimize = b.standardOptimizeOption(.{});
 
     const gobject = b.dependency("gobject", .{});

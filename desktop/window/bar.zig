@@ -208,6 +208,7 @@ pub const Window = struct {
 
     pub fn deinit(self: *Window) void {
         self.allocator.destroy(self);
+        self.window.f_parent_instance.destroy();
     }
 };
 
@@ -272,6 +273,12 @@ pub const MonitorWindows = struct {
         self.signals[i] = gdk.Surface.signals.layout.connect(surface, *MonitorWindows, &onResize, self, .{});
     }
 
+    fn removeResizeHandler(self: *MonitorWindows, i: usize, window: *astal.Window) void {
+        const native = window.f_parent_instance.f_parent_instance.getNative().?;
+        const surface = native.getSurface().?;
+        gobject.signalHandlerDisconnect(surface.as(gobject.Object), self.signals[i]);
+    }
+
     fn onResize(_: *gdk.Surface, _: c_int, _: c_int, self: *MonitorWindows) callconv(.c) void {
         _ = updateMargins(self);
     }
@@ -295,5 +302,23 @@ pub const MonitorWindows = struct {
         self.corners.setMarginBottom(bottomMargin);
 
         self.callback(self.context, topMargin, leftMargin, rightMargin, bottomMargin);
+    }
+
+    pub fn deinit(self: *MonitorWindows) void {
+        self.bottomWindow.cleanupWidgets();
+        self.topWindow.cleanupWidgets();
+        self.leftWindow.cleanupWidgets();
+        self.rightWindow.cleanupWidgets();
+
+        self.app.removeWindow(self.bottomWindow.window.as(gtk.Window));
+        self.app.removeWindow(self.topWindow.window.as(gtk.Window));
+        self.app.removeWindow(self.leftWindow.window.as(gtk.Window));
+        self.app.removeWindow(self.rightWindow.window.as(gtk.Window));
+        std.log.debug("Removed windows from app", .{});
+
+        self.bottomWindow.deinit();
+        self.topWindow.deinit();
+        self.leftWindow.deinit();
+        self.rightWindow.deinit();
     }
 };
