@@ -9,11 +9,13 @@
         pkg-config
         vala
         gobject-introspection
+        cmake
     ];
 
     buildInputs = [
         astal.packages.${system}.io
         astal.packages.${system}.astal3
         astal.packages.${system}.battery
+        pkgs.gtk4
     ];
 }
