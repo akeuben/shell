@@ -12,10 +12,22 @@
         cmake
     ];
 
-    buildInputs = [
-        astal.packages.${system}.io
-        astal.packages.${system}.astal3
-        astal.packages.${system}.battery
-        pkgs.gtk4
-    ];
+    
+        buildInputs = let 
+            astalDeps = with astal.packages.${system}; [
+                astal4
+                io
+                battery
+                wireplumber 
+                network 
+                mpris 
+                powerprofiles 
+                tray 
+                bluetooth
+            ];
+            deps = with pkgs; [
+                networkmanager
+            ];
+        in 
+            astalDeps ++ deps;
 }

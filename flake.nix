@@ -17,6 +17,7 @@
 
         devShells.${system}.default = import ./shell.nix {
             inherit pkgs astal system;
+            desktop = self.packages.${system}.kappashell-desktop;
         };
     };
 }
