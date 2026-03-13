@@ -1,0 +1,25 @@
+@define-color fg-color @theme_fg_color;
+@define-color bg-color @theme_bg_color;
+@define-color accent-color @accent_color;
+@define-color base-color shade(@bg-color, 1.4);
+@define-color subbase-color shade(@bg-color, 1.8);
+
+* {
+    border: none;
+}
+.bar {
+    margin-top: -1px;
+}
+
+button {
+    border: none;
+    background: aqua;
+}
+
+.overlay {
+    background: transparent;
+}
+
+.inverted_corner {
+    color: @bg-color;
+}

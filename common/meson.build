@@ -17,6 +17,13 @@ dependencies = [
   dependency('libnm'),
 ]
 
-common_lib = library('kappashell-common', sources, dependencies: dependencies, install: true)
+# compiling data files into a binary
+resource = import('gnome').compile_resources(
+  'data',
+  files('gresource.xml'),
+  source_dir: meson.current_build_dir(),
+)
+
+common_lib = library('kappashell-common', [sources, resource], dependencies: dependencies, install: true)
 
 common = declare_dependency(link_with: common_lib, dependencies: dependencies, include_directories: include_directories('.'))

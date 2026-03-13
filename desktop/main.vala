@@ -1,3 +1,5 @@
+using Kappashell;
+
 public class KappashellDesktop : Gtk.Application { 
     static KappashellDesktop instance;
 
@@ -14,12 +16,16 @@ public class KappashellDesktop : Gtk.Application {
         } else {
             command_line.print_literal("Hello from the main instance\n");
 
+            setup_css(null);
+
             var monitors = Gdk.Display.get_default().get_monitors();
 
             for(var i = 0; i < monitors.get_n_items (); i++) {
                 var monitor = (Gdk.Monitor) monitors.get_item(i);
 
-                add_window(new WindowBar(monitor));
+                var barset = new Kappashell.BarSet(monitor);
+
+                barset.add_windows(this);
             }
         }
 
