@@ -2,7 +2,7 @@ import { Gtk } from "ags/gtk4";
 import Graphene from "gi://Graphene?version=1.0";
 import Gsk from "gi://Gsk?version=4.0";
 import Pango from "gi://Pango?version=1.0";
-import { Accessor } from "gnim";
+import { Accessor, onCleanup } from "gnim";
 import { isAccessor } from "../util/generic";
 import { property, register } from "gnim/gobject";
 import GLib from "gi://GLib?version=2.0";
@@ -19,6 +19,8 @@ export class MarqueeLabel extends Gtk.Label {
     @property(Number)
     private dir: number = -0.25;
 
+    private unsubscribe: any | null = null;
+
     constructor(props: { label: string | Accessor<string>, cssClass?: string }) {
         super({
             label: props.label instanceof Accessor ? (props.label.get()) : (props.label),
@@ -32,7 +34,7 @@ export class MarqueeLabel extends Gtk.Label {
         }
 
         if(isAccessor(props.label)) {
-            props.label.subscribe(() => {
+            this.unsubscribe = props.label.subscribe(() => {
                 this.set_label((props.label as Accessor<string>).get())
             })
         }
@@ -124,6 +126,15 @@ export class MarqueeLabel extends Gtk.Label {
         }
         return [a, b, c, d]
     }
+
+    cleanup() {
+        if(this.unsubscribe) this.unsubscribe();
+        if (this.timeoutId) {
+            GLib.source_remove(this.timeoutId);
+            this.timeoutId = 0;
+        }
+        this.offset = 0;
+    }
 }
 
 export const WrappedMarqueeLabel = ({label, cssClass}: {label: string | Accessor<string>, cssClass?: string}) => {
@@ -132,7 +143,9 @@ export const WrappedMarqueeLabel = ({label, cssClass}: {label: string | Accessor
         cssClass: cssClass || "",
     });
 
-    return <box hexpand overflow={Gtk.Overflow.HIDDEN}>
+    return <box hexpand overflow={Gtk.Overflow.HIDDEN} $={() => {
+        onCleanup(() => marquee.cleanup());
+    }}>
         {marquee}
     </box>
 }

@@ -126,9 +126,6 @@ const NetworkActiveCard = ({wifi}: {wifi: AstalNetwork.Wifi}) => {
             setNeedPassword(wifi.access_points.find(ap => ap.ssid === wifi.ssid) || null);
         }
     })
-    wifi.connect("notify::ssid", () => {
-        console.log(wifi.ssid)
-    })
 
     const height = 110;
     const width = 350;
@@ -167,7 +164,6 @@ const NetworkActiveCard = ({wifi}: {wifi: AstalNetwork.Wifi}) => {
                         controller.set_propagation_phase(Gtk.PropagationPhase.CAPTURE);
                         controller.connect("key-released", (_controller, key, _keycode, _state) => {
                             if([Gdk.KEY_Return, Gdk.KEY_KP_Enter].includes(key)) {
-                                console.log(self.text);
                                 needPassword.activate(self.text, (_, res) => {
                                     needPassword.activate_finish(res);
                                     setNeedPassword(null);

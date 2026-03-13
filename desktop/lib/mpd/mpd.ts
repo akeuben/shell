@@ -7,6 +7,8 @@ export namespace KappashellMPD {
 
     let instance: MPDClient = null as any;
 
+    let art_cache: Record<string, Gdk.Paintable> = {};
+
     export function get_default() {
         if(!instance) {
             instance = new MPDClient({host: "localhost", port: 6600});
@@ -98,15 +100,19 @@ export namespace KappashellMPD {
 
         @getter(Gdk.Paintable)
         get album_art() {
-            if(!this.art_loaded) {
+            if(!this.m_art_loaded) {
                 throw new Error("Art must be loaded with $load_album_art() before reading $album_art.");
             }
 
-            return this.m_album_art;
+            return this.m_album_art as Gdk.Paintable;
         }
-        private m_album_art: Gdk.Paintable;
+        private m_album_art: Gdk.Paintable | null;
 
-        private art_loaded: boolean = false;
+        @getter(Boolean)
+        get art_loaded() {
+            return this.m_art_loaded;
+        }
+        private m_art_loaded: boolean = false;
 
         private client: MPDClient;
 
@@ -114,9 +120,7 @@ export namespace KappashellMPD {
             super();
 
             this.client = client;
-            this.m_album_art = Gdk.MemoryTexture.new(1, 1, Gdk.MemoryFormat.R8G8B8A8, new Uint8Array([
-                0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-            ]), 4);
+            this.m_album_art = null;
 
             for(const line of data) {
                 const start = line.split(": ")[0];
@@ -169,13 +173,37 @@ export namespace KappashellMPD {
                         break;
                 }
             }
+
+            if(Object.keys(art_cache).includes(this.album)) {
+                this.m_art_loaded = true;
+                this.m_album_art = art_cache[this.album];
+
+                this.notify("art_loaded");
+                this.notify("album_art");
+            };
         }
 
         public async load_album_art() {
             if(this.art_loaded) return;
+            if(Object.keys(art_cache).includes(this.album)) {
+                this.m_art_loaded = true;
+                this.m_album_art = art_cache[this.album];
+
+                this.notify("art_loaded");
+                this.notify("album_art");
+
+                return;
+            }
             const bytes = await this.client.sendBinaryCommand("readpicture", this.file);
             this.m_album_art = Gdk.Texture.new_from_bytes(bytes);
-            this.art_loaded = true;
+            this.m_art_loaded = true;
+
+            art_cache[this.album] = this.m_album_art;
+
+            console.log("Loading album art for " + this.album);
+
+            this.notify("album_art");
+            this.notify("art_loaded");
         }
     }
 
@@ -324,6 +352,8 @@ export namespace KappashellMPD {
 
         public constructor(client: MPDClient, name: string) {
             super();
+
+            console.log("Created playlist " + name);
 
             this.m_name = name;
             this.client = client;
@@ -564,6 +594,7 @@ export namespace KappashellMPD {
 
                     if(result.total_size == -1) {
                         result.total_size = result.chunk_size;
+                        console.warn("Did not recieve total size!");
                     }
 
 

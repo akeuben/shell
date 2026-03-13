@@ -103,7 +103,6 @@ export function Top({gdkmonitor}: {gdkmonitor: Gdk.Monitor}) {
                     const controller = Gtk.GestureClick.new();
                     controller.connect("released", () => {
                         setTopMenuOpen(true)
-                        console.log("OPEN");
                     });
                     e.add_controller(controller);
                 }}/>

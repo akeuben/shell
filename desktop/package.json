@@ -1,4 +1,5 @@
 {
+  "name": "Kappashell-Desktop",
   "dependencies": {
     "ags": "*",
     "gnim": "*"

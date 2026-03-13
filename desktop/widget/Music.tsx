@@ -1,12 +1,14 @@
 import { Astal, Gdk, Gtk } from "ags/gtk4";
 import Adw from "gi://Adw?version=1";
 import AstalMpris from "gi://AstalMpris?version=0.1"
-import { Accessor, createBinding, createComputed, createState, For, With } from "gnim";
+import { Accessor, createBinding, createComputed, createState, For, onCleanup, With } from "gnim";
 import { WrappedMarqueeLabel } from "./Marquee";
 import { IconButton } from "./IconButton";
 import { KappashellMPD } from "../lib/mpd/mpd";
-import { Gio, GLib } from "astal";
 import { pointer } from "../util/cursor";
+import Gio from "gi://Gio?version=2.0";
+import GLib from "gi://GLib?version=2.0";
+import { AsyncMutex } from "./AsyncMutex";
 
 
 const mpris = AstalMpris.get_default();
@@ -115,14 +117,17 @@ const MPRISWidget = () => {
     </box>
 }
 
-const TrackView = ({name}: {name: string}) => {
+const TrackView = ({name, menu}: {name: string, menu: Gio.Menu}) => {
     const [tracklist, setTracklist] = createState<KappashellMPD.Song[]>([]);
     return <box name={name} orientation={Gtk.Orientation.VERTICAL} class="top-section" vexpand>
         <Gtk.Entry placeholder_text="Search All Tracks" hexpand onNotifyText={async (self) => {
             if(self.text.length >= 3) {
-                const songs = await mpd.search_songs(self.text, 'title');
-                console.log(songs.map(song => song.file));
-                setTracklist(songs);
+                try {
+                    const songs = await mpd.search_songs(self.text, 'title');
+                    setTracklist(songs);
+                } catch(e) {
+                    console.log(e);
+                }
             } else {
                 setTracklist([]);
             }
@@ -131,9 +136,7 @@ const TrackView = ({name}: {name: string}) => {
             <box orientation={Gtk.Orientation.VERTICAL} spacing={5}>
                 <For each={tracklist}>
                     {(song: KappashellMPD.Song, index) => 
-                        <Astal.Bin onMap={(self) => {
-                            self.set_child(<MPDSongElement song={song} index={index} scrolledWindow={self.parent.parent as Gtk.ScrolledWindow} /> as Gtk.Widget);
-                        }} />
+                        <MPDSongElement song={song} index={index} model={menu}/>
                     }
                 </For>
             </box>
@@ -180,7 +183,7 @@ const PlaylistEntry = ({playlist, setSelectedPlaylist}: {playlist: KappashellMPD
     </box>
 }
 
-const PlaylistView = ({name}: {name: string}) => {
+const PlaylistView = ({name, menu}: {name: string, menu: Gio.Menu}) => {
     const [selectedPlaylist, setSelectedPlaylist] = createState<KappashellMPD.Playlist | null>(null);
 
     return <stack name={name} visible_child_name={selectedPlaylist.as(p => p ? "list" : "null")} transition_type={Gtk.StackTransitionType.SLIDE_LEFT_RIGHT} class="top-section">
@@ -211,9 +214,7 @@ const PlaylistView = ({name}: {name: string}) => {
                         <box orientation={Gtk.Orientation.VERTICAL}>
                             <For each={createBinding(playlist, "songs")}>
                                 {(song: KappashellMPD.Song, index) => 
-                                    <Astal.Bin onMap={(self) => {
-                                        self.set_child(<MPDSongElement song={song} index={index} currentPlaylist={selectedPlaylist} scrolledWindow={self.parent.parent as Gtk.ScrolledWindow} /> as Gtk.Widget);
-                                    }} />
+                                    <MPDSongElement song={song} index={index} currentPlaylist={selectedPlaylist} model={menu} />
                                 }
                             </For>
                         </box>
@@ -251,29 +252,42 @@ function isWidgetVisibleInScrolledWindow(widget: Gtk.Widget, scrolledWindow: Gtk
     );
 }
 
-function setupLazyAlbumArt(songWidget: Gtk.Widget, image: Gtk.Picture, song: KappashellMPD.Song, scrolledWindow: Gtk.ScrolledWindow) {
+const albumArtMutex = new AsyncMutex();
+
+function setupLazyAlbumArt(songWidget: Gtk.Widget, image: Gtk.Picture, song: KappashellMPD.Song, scrolledWindow: Gtk.ScrolledWindow | null) {
     let loaded = false;
 
     const tryLoad = async () => {
         if (loaded) return;
-        if (isWidgetVisibleInScrolledWindow(songWidget, scrolledWindow)) {
+        if (!scrolledWindow || isWidgetVisibleInScrolledWindow(songWidget, scrolledWindow)) {
             loaded = true;
             try {
                 await song.load_album_art();
                 image.set_paintable(song.album_art);
-            } catch(e) {
-                console.log(e);
-            }
+            } catch(_) {}
         }
     };
 
+    if(!scrolledWindow) {
+        albumArtMutex.withLock(tryLoad);
+        return;
+    }
+
     // Re-check when scrolling or resizing happens
     let vadj = scrolledWindow.get_vadjustment();
-    vadj.connect("value-changed", tryLoad);
-    songWidget.connect("map", tryLoad);
+    vadj.connect("value-changed", () => {
+        albumArtMutex.withLock(tryLoad);
+    });
+    if(songWidget.get_mapped()) {
+        albumArtMutex.withLock(tryLoad);
+    } else {
+        songWidget.connect("map", () => {
+            albumArtMutex.withLock(tryLoad);
+        });
+    }
 }
 
-const MPDSongElement = ({song, currentPlaylist, index, scrolledWindow}: {song: KappashellMPD.Song, currentPlaylist?: Accessor<null | KappashellMPD.Playlist>, index: Accessor<number>, scrolledWindow: Gtk.ScrolledWindow}) => {
+const MPDSongElement = ({song, currentPlaylist, index, model}: {song: KappashellMPD.Song, currentPlaylist?: Accessor<null | KappashellMPD.Playlist>, index: Accessor<number>, model: Gio.Menu}) => {
     const album_artist = createComputed([
         createBinding(song, "album"),
         createBinding(song, "artist"),
@@ -312,56 +326,48 @@ const MPDSongElement = ({song, currentPlaylist, index, scrolledWindow}: {song: K
 
     const newPlaylistEntry = new Gtk.Entry();
     newPlaylistEntry.set_placeholder_text("Enter playlist name");
-    newPlaylistEntry.connect("activate", (self) => {
+    const connection = newPlaylistEntry.connect("activate", (self) => {
         addToPlaylist(GLib.Variant.new_string(self.text));
         newPlaylistEntry.text = "";
         const parent = newPlaylistEntry.parent.parent as Gtk.Popover;
         parent.popdown();
     });
-
-    const playlists = new Gio.Menu();
-    for(const playlist of mpd.playlists) {
-        playlists.append(playlist.name, `menu.add-to-playlist('${playlist.name}')`);
-    }
-
-    playlists.append("Create New Playlist", "menu.new-playlist");
-
-    mpd.connect("notify::playlists", () => {
-        playlists.remove_all();
-
-        for(const playlist of mpd.playlists) {
-            playlists.append(playlist.name, `menu.add-to-playlist('${playlist.name}')`);
-        }
-
-        playlists.append("Create New Playlist", "menu.new-playlist");
-    });
-
-    const model = new Gio.Menu();
-    model.append("Play Next", "menu.play-next");
-    model.append("Add To Queue", "menu.add-to-queue");
-    model.append("See Artist", "menu.artist");
-    model.append("See Album", "menu.album");
-
-    if(currentPlaylist) {
-        model.append("Remove from Playlist", "menu.remove-playlist");
-    } else {
-        model.append_submenu("Add to Playlist", playlists);
-    }
+    onCleanup(() => {
+        newPlaylistEntry.disconnect(connection);
+    })
 
     const popover = new Gtk.PopoverMenu();
     popover.set_menu_model(model);
 
-    const picture = <Gtk.Picture content_fit={Gtk.ContentFit.COVER} can_shrink /> as Gtk.Picture;
+    const picture = <Gtk.Picture content_fit={Gtk.ContentFit.COVER} can_shrink $={() => {
+        onCleanup(() => console.log("Picture was destroyed"));
+    }}/> as Gtk.Picture;
 
     const overlay = new Gtk.Overlay();
     overlay.set_child(
-        <Gtk.AspectFrame ratio={1} halign={Gtk.Align.CENTER} valign={Gtk.Align.CENTER} height_request={20} class="album-art">
+        <Gtk.AspectFrame ratio={1} width_request={70} class="album-art">
             {picture}
         </Gtk.AspectFrame> as Gtk.Widget 
     );
+    overlay.add_overlay(
+        <label class="album_art_placeholder" label={createComputed([createBinding(song, "album"), createBinding(song, "art_loaded")], (album, has_art) => {
+            if(has_art) return "";
+            return album ? album[0].toUpperCase() : "?";
+        })}/> as Gtk.Widget
+    )
 
-    const widget = <box class="queue-item" hexpand vexpand={false} valign={Gtk.Align.START} spacing={10} $={(self) => {
-        setupLazyAlbumArt(self, picture, song, scrolledWindow);
+    return <box class="queue-item" hexpand vexpand={false} valign={Gtk.Align.START} spacing={10} onMap={(self) => {
+        let widget: Gtk.Widget = self;
+        while(!(widget instanceof Gtk.ScrolledWindow)) {
+            widget = widget.parent;
+
+            if(widget === widget.root) {
+                setupLazyAlbumArt(self, picture, song, null);
+            }
+        }
+        setupLazyAlbumArt(self, picture, song, widget as Gtk.ScrolledWindow);
+    }} $={() => {
+        onCleanup(() => console.log("Song was destroyed"));
     }}>
         {overlay}
         <box orientation={Gtk.Orientation.VERTICAL} margin_end={5}>
@@ -369,7 +375,7 @@ const MPDSongElement = ({song, currentPlaylist, index, scrolledWindow}: {song: K
             <IconButton className="" icon_name="media-playback-start-symbolic" pixel_size={16} onClicked={playNow} />
         </box>
         <box valign={Gtk.Align.CENTER} hexpand orientation={Gtk.Orientation.VERTICAL}>
-            <WrappedMarqueeLabel label={song.title} cssClass="connectable-title" />
+            <WrappedMarqueeLabel label={song.title} />
             <WrappedMarqueeLabel label={album_artist} />
         </box>
         <menubutton valign={Gtk.Align.CENTER} icon_name="ui-menu-symbolic" popover={popover} $={(self) => {
@@ -388,10 +394,12 @@ const MPDSongElement = ({song, currentPlaylist, index, scrolledWindow}: {song: K
             addAction(group, "remove-playlist", null, removeFromPlaylist);
 
             self.insert_action_group("menu", group);
+
+            onCleanup(() => {
+                newPlaylistPopover.unparent();
+            });
         }}/>
     </box>
-
-    return widget;
 }
 
 const MPDQueueElement = ({queue, song, current}: {queue: KappashellMPD.Queue, song: KappashellMPD.Song, current: Accessor<KappashellMPD.Song>}) => {
@@ -470,6 +478,43 @@ const MusicPageWithMDP = ({name}: {name: string}) => {
     grid.margin_top = 10;
 
     const current_song = createBinding(mpd, "current_song");
+
+    const playlists = new Gio.Menu();
+    for(const playlist of mpd.playlists) {
+        playlists.append(playlist.name, `menu.add-to-playlist('${playlist.name}')`);
+    }
+
+    playlists.append("Create New Playlist", "menu.new-playlist");
+
+
+    const connection = mpd.connect("notify::playlists", () => {
+        playlists.remove_all();
+
+        for(const playlist of mpd.playlists) {
+            playlists.append(playlist.name, `menu.add-to-playlist('${playlist.name}')`);
+        }
+
+        playlists.append("Create New Playlist", "menu.new-playlist");
+    });
+    onCleanup(() => {
+        mpd.disconnect(connection);
+    });
+
+    const playlistMenuModel = new Gio.Menu();
+    const menuModel = new Gio.Menu();
+
+    playlistMenuModel.append("Play Next", "menu.play-next");
+    playlistMenuModel.append("Add To Queue", "menu.add-to-queue");
+    playlistMenuModel.append("See Artist", "menu.artist");
+    playlistMenuModel.append("See Album", "menu.album");
+    menuModel.append("Play Next", "menu.play-next");
+    menuModel.append("Add To Queue", "menu.add-to-queue");
+    menuModel.append("See Artist", "menu.artist");
+    menuModel.append("See Album", "menu.album");
+
+    playlistMenuModel.append("Remove from Playlist", "menu.remove-playlist");
+    menuModel.append_submenu("Add to Playlist", playlists);
+
 
     const queue = <scrolledwindow class="top-section" hexpand vscrollbarPolicy={Gtk.PolicyType.AUTOMATIC} hscrollbar_policy={Gtk.PolicyType.NEVER} $={(self) => {
         current_song.subscribe(() => {
@@ -566,10 +611,10 @@ const MusicPageWithMDP = ({name}: {name: string}) => {
             
         </box>
         <stack visible_child_name={browser_page}>
-            <PlaylistView $type="named" name="playlists" />
-            <TrackView $type="named" name="albums" />
-            <TrackView $type="named" name="artists" />
-            <TrackView $type="named" name="tracks" />
+            <PlaylistView $type="named" name="playlists" menu={playlistMenuModel} />
+            <TrackView $type="named" name="albums" menu={menuModel} />
+            <TrackView $type="named" name="artists" menu={menuModel} />
+            <TrackView $type="named" name="tracks" menu={menuModel} />
         </stack>
     </box>
 

@@ -41,6 +41,7 @@
                     gobject-introspection
                     ags.packages.${system}.default
                     libadwaita
+                    nodejs
                 ];
                 buildInputs = [
                     pkgs.glib 
