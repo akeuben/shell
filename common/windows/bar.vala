@@ -34,14 +34,23 @@ namespace Kappashell {
 
             var c = config.get_object();
 
-            if(c.has_member("top"))
+            this.top.remove_old_widgets();
+            this.bottom.remove_old_widgets();
+            this.left.remove_old_widgets();
+            this.right.remove_old_widgets();
+
+            if(c.has_member("top")) {
                 this.top.update_config(c.get_member("top"));
-            if(c.has_member("bottom"))
+            }
+            if(c.has_member("bottom")) {
                 this.bottom.update_config(c.get_member("bottom"));
-            if(c.has_member("left"))
+            }
+            if(c.has_member("left")) {
                 this.left.update_config(c.get_member("left"));
-            if(c.has_member("right"))
+            }
+            if(c.has_member("right")) {
                 this.right.update_config(c.get_member("right"));
+            }
         }
     }
 
@@ -111,16 +120,18 @@ namespace Kappashell {
             GLib.error("Invalid side passed to Bar::name");
         }
 
+        public void remove_old_widgets() {
+            center_box.start_widget = null;
+            center_box.center_widget = null;
+            center_box.end_widget = null;
+        }
+
         public void update_config(Json.Node config) throws BarConfigError {
             if(config.get_node_type() != Json.NodeType.OBJECT)
                 throw new BarConfigError.WRONG_TYPE("%s should be of type `Object`", name(main_anchor));
 
 
             var c = config.get_object();
-
-            center_box.start_widget = null;
-            center_box.center_widget = null;
-            center_box.end_widget = null;
 
             if(c.has_member("start")) {
                 var list_root = c.get_member("start");
