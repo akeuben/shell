@@ -27,6 +27,7 @@
             ];
             deps = with pkgs; [
                 networkmanager
+                json-glib
             ];
         in 
             astalDeps ++ deps;

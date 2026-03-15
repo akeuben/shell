@@ -9,6 +9,18 @@
 }
 .bar {
     margin-top: -1px;
+    min-width: 5px;
+    min-height: 5px;
+}
+
+.clock-hour {
+    color: @accent_color;
+    font-weight: 900;
+}
+
+.clock-ampm {
+    color: #777;
+    font-size: 0.8rem;
 }
 
 button {
@@ -22,4 +34,10 @@ button {
 
 .inverted_corner {
     color: @bg-color;
+}
+
+.error-window {
+    background: #dd0000aa;
+    padding: 20px;
+    border-radius: 20px;
 }

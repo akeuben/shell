@@ -15,6 +15,8 @@ dependencies = [
   dependency('astal-tray-0.1'),
   dependency('astal-bluetooth-0.1'),
   dependency('libnm'),
+  dependency('json-glib-1.0'),
+  dependency('gio-2.0'),
 ]
 
 # compiling data files into a binary

@@ -11,5 +11,48 @@ namespace Kappashell {
             provider,
             Gtk.STYLE_PROVIDER_PRIORITY_USER
         );
+
+        register_widget("logo", LogoWidget);
+        register_widget("clock", ClockWidget);
+        register_widget("workspace", WorkspaceWidget);
     }    
+
+    public delegate void OnConfigChanged(Json.Node json);
+    public delegate void OnConfigError(GLib.Error error);
+
+    public void setup_config_monitor(string path, OnConfigChanged changed, OnConfigError error) {
+        var file = GLib.File.new_for_path(path);
+        try {
+            var monitor = file.monitor(GLib.FileMonitorFlags.NONE, null);
+            monitor.ref();
+            monitor.rate_limit = 100;
+
+            monitor.changed.connect((file, other, type) => {
+                if(type != GLib.FileMonitorEvent.CHANGED) 
+                    return;
+                read_config(path, changed, error);
+            });
+        } catch(GLib.Error e) {
+            error(e);
+            return;
+        }
+        
+        GLib.Timeout.add_once(0, () => {
+            read_config(path, changed, error);
+        });
+    }
+
+    private void read_config(string path, OnConfigChanged changed, OnConfigError error) {
+        var parser = new Json.Parser();
+        try {
+            parser.load_from_file(path);
+
+            var node = parser.get_root();
+
+            changed(node);
+        } catch(GLib.Error e) {
+            error(e);
+            return;
+        }
+    }
 }
