@@ -24,6 +24,7 @@
                 powerprofiles 
                 tray 
                 bluetooth
+                hyprland
             ];
             deps = with pkgs; [
                 networkmanager
