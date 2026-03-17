@@ -1,5 +1,5 @@
 namespace Kappashell {
-    const int BAR_MARGIN = 15;
+    const int BAR_MARGIN = 5;
 
     public errordomain BarConfigError {
         WRONG_TYPE,

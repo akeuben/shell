@@ -5,6 +5,14 @@ namespace Kappashell {
         image.icon_name = "error-app-symbolic";
         image.pixel_size = 16;
 
+        if(env.orientation == Gtk.Orientation.VERTICAL) {
+            image.margin_top = 10;
+            image.margin_bottom = 10;
+        } else {
+            image.margin_start = 10;
+            image.margin_end = 10;
+        }
+
         if(config.get_node_type() == Json.NodeType.OBJECT) {
             var c = config.get_object();
             image.icon_name = c.get_string_member_with_default("icon", "error-app-symbolic");

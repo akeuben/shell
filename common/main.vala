@@ -16,6 +16,8 @@ namespace Kappashell {
         register_widget("clock", ClockWidget);
         register_widget("workspace", WorkspaceWidget);
         register_widget("indicators", IndicatorsWidget);
+        register_widget("client", ClientWidget);
+        register_widget("tray", SystemTrayWidget);
     }    
 
     public delegate void OnConfigChanged(Json.Node json);

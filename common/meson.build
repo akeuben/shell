@@ -17,7 +17,7 @@ dependencies = [
   dependency('astal-hyprland-0.1'),
   dependency('libnm'),
   dependency('json-glib-1.0'),
-  dependency('gio-2.0'),
+  dependency('gio-unix-2.0'),
 ]
 
 # compiling data files into a binary
@@ -27,6 +27,6 @@ resource = import('gnome').compile_resources(
   source_dir: meson.current_build_dir(),
 )
 
-common_lib = library('kappashell-common', [sources, resource], dependencies: dependencies, install: true)
+common_lib = library('kappashell-common', [sources, resource], dependencies: dependencies, install: true, link_args: ['-lm'])
 
 common = declare_dependency(link_with: common_lib, dependencies: dependencies, include_directories: include_directories('.'))
