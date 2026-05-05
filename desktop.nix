@@ -10,6 +10,7 @@
         vala
         gobject-introspection
         cmake
+        libyaml
     ];
 
     
@@ -29,6 +30,7 @@
             deps = with pkgs; [
                 networkmanager
                 json-glib
+                libgee
             ];
         in 
             astalDeps ++ deps;

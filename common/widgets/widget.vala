@@ -1,6 +1,6 @@
 namespace Kappashell {
     [CCode (has_target = false)]
-    public delegate Gtk.Widget WidgetConstructor(Json.Node config, WidgetEnvironment env) throws BarConfigError;
+    public delegate Gtk.Widget WidgetConstructor(ConfigNode config, WidgetEnvironment env) throws BarConfigError;
 
     private HashTable<string, RegisteredWidget?> registered_widgets;
     public struct RegisteredWidget {
@@ -25,7 +25,7 @@ namespace Kappashell {
         });
     }
     
-    public Gtk.Widget instantiate_widget(string widgetType, Json.Node config, WidgetEnvironment env) throws BarConfigError {
+    public Gtk.Widget instantiate_widget(string widgetType, ConfigNode config, WidgetEnvironment env) throws BarConfigError {
         var entry = registered_widgets.lookup(widgetType);
 
         if(entry == null)

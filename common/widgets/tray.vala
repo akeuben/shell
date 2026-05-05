@@ -1,7 +1,8 @@
 namespace Kappashell {
-    public Gtk.Grid SystemTrayWidget(Json.Node config, WidgetEnvironment env) throws BarConfigError {
+    public Gtk.Grid SystemTrayWidget(ConfigNode config, WidgetEnvironment env) throws BarConfigError {
         var tray = AstalTray.get_default();
         var grid = new Gtk.Grid();
+        grid.column_homogeneous = true;
 
         NotifyHandler update_tray = () => {
             print("The tray has %u items\n",tray.items.length());

@@ -1,0 +1,29 @@
+# Kappashell Example configuration file
+# Remove this line to remove the warning!
+default: true 
+# You can attach widgets to any side of the screen. Valid locations for widgets are:
+# top, bottom, left, or right. You can chooce any combination of these.
+left:
+  # You can have widgets at the start (top or left, depending on the side of the monitor)
+  # the middle 
+  # or the end (bottom, or right, depending on the side of the monitor)
+  start:
+    # Each widget declaration has a type and a config. See the wiki for a complete list of options!
+    - type: "logo"
+      config: 
+        icon: "nix-snowflake-white"
+        # Most options have a default value. Try removing this line, and the widget will still work.
+        size: 32
+    - type: "clients"
+      config: {}
+  middle:
+    - type: "client"
+      config: {}
+  end:
+    - type: "tray"
+      config: {}
+top:
+  middle:
+    - type: "clock"
+      config:
+        24hour: true

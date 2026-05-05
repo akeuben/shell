@@ -1,10 +1,10 @@
 namespace Kappashell {
 
-    public Gtk.Box ClientWidget(Json.Node config, WidgetEnvironment env) throws BarConfigError {
+    public Gtk.Box ClientWidget(ConfigNode config, WidgetEnvironment env) throws BarConfigError {
         return new HyprlandClientWidget(config, env);
     }
 
-    public Gtk.Box InactiveClientsWidget(Json.Node config, WidgetEnvironment env) throws BarConfigError {
+    public Gtk.Box InactiveClientsWidget(ConfigNode config, WidgetEnvironment env) throws BarConfigError {
         return new HyprlandInactiveClientsWidget(config, env);
     }
 
@@ -12,7 +12,7 @@ namespace Kappashell {
         AstalHyprland.Hyprland hyprland;
         AstalHyprland.Monitor monitor;
 
-        public HyprlandInactiveClientsWidget(Json.Node config, WidgetEnvironment env) {
+        public HyprlandInactiveClientsWidget(ConfigNode config, WidgetEnvironment env) {
             this.hyprland = AstalHyprland.get_default();
             this.monitor = hyprland.get_monitor_by_name(env.monitor.get_connector());
             this.orientation = env.orientation;
@@ -44,6 +44,8 @@ namespace Kappashell {
                     continue;
 
                 var btn = new Gtk.Button.from_icon_name(get_icon_name_for_hypr_client(client));
+                btn.tooltip_text = client.title;
+                ((Gtk.Image) btn.child).pixel_size = 24;
 
                 btn.clicked.connect(() => client.focus());
 
@@ -69,7 +71,7 @@ namespace Kappashell {
 
         AstalHyprland.Hyprland hyprland;
         
-        public HyprlandClientWidget(Json.Node config, WidgetEnvironment env) {
+        public HyprlandClientWidget(ConfigNode config, WidgetEnvironment env) {
             this.hyprland = AstalHyprland.get_default();
             this.orientation = env.orientation;
             this.spacing = 10;

@@ -1,5 +1,5 @@
 namespace Kappashell {
-    public Gtk.Box WorkspaceWidget(Json.Node config, WidgetEnvironment env) throws BarConfigError {
+    public Gtk.Box WorkspaceWidget(ConfigNode config, WidgetEnvironment env) throws BarConfigError {
         return new HyprlandWorkspaceWidget(config, env);
     }
 
@@ -7,7 +7,7 @@ namespace Kappashell {
         AstalHyprland.Monitor monitor;
         AstalHyprland.Hyprland hyprland;
 
-        public HyprlandWorkspaceWidget(Json.Node config, WidgetEnvironment env) {
+        public HyprlandWorkspaceWidget(ConfigNode config, WidgetEnvironment env) {
             orientation = env.orientation;
             spacing = 10;
 

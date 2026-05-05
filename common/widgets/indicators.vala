@@ -5,10 +5,10 @@ namespace Kappashell {
 
     delegate void NotifyHandler();
 
-    public Gtk.Box IndicatorsWidget(Json.Node config, WidgetEnvironment env) throws BarConfigError {
+    public Gtk.Box IndicatorsWidget(ConfigNode config, WidgetEnvironment env) throws BarConfigError {
         var box = new Gtk.Box(env.orientation, 10);
         box.add_css_class("bar-item");
-        box.hexpand = false;
+        box.hexpand = true;
         box.halign = Gtk.Align.CENTER;
 
         box.append(NetworkIndicator());
@@ -74,26 +74,26 @@ namespace Kappashell {
         network.notify["primary"].connect(() => update_icon());
 
         network.notify["wifi"].connect(() => {
-                if (wifi_icon_connect != 0) {
+            if (wifi_icon_connect != 0) {
                 network.wifi.disconnect(wifi_icon_connect);
                 wifi_icon_connect = 0;
-                }
-                if (network.wifi != null) {
+            }
+            if (network.wifi != null) {
                 wifi_icon_connect = network.wifi.notify["icon-name"].connect(() => update_icon());
-                }
-                update_icon();
-                });
+            }
+            update_icon();
+        });
 
         network.notify["wired"].connect(() => {
-                if (wired_icon_connect != 0) {
+            if (wired_icon_connect != 0) {
                 network.wired.disconnect(wired_icon_connect);
                 wired_icon_connect = 0;
-                }
-                if (network.wired != null) {
+            }
+            if (network.wired != null) {
                 wired_icon_connect = network.wired.notify["icon-name"].connect(() => update_icon());
-                }
+            }
                 update_icon();
-                });
+        });
 
         if (network.wifi != null) {
             wifi_icon_connect = network.wifi.notify["icon-name"].connect(() => update_icon());

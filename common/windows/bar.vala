@@ -28,8 +28,8 @@ namespace Kappashell {
             application.add_window(overlay);
         }
 
-        public void on_bar_config_changed(Json.Node config) throws BarConfigError {
-            if(config.get_node_type() != Json.NodeType.OBJECT)
+        public void on_bar_config_changed(ConfigNode config) throws BarConfigError {
+            if(config.get_node_type() != ConfigNodeType.Object)
                 throw new BarConfigError.WRONG_TYPE("root should be of type `Object`");
 
             var c = config.get_object();
@@ -126,8 +126,8 @@ namespace Kappashell {
             center_box.end_widget = null;
         }
 
-        public void update_config(Json.Node config) throws BarConfigError {
-            if(config.get_node_type() != Json.NodeType.OBJECT)
+        public void update_config(ConfigNode config) throws BarConfigError {
+            if(config.get_node_type() != ConfigNodeType.Object)
                 throw new BarConfigError.WRONG_TYPE("%s should be of type `Object`", name(main_anchor));
 
 
@@ -135,7 +135,7 @@ namespace Kappashell {
 
             if(c.has_member("start")) {
                 var list_root = c.get_member("start");
-                if(list_root.get_node_type() != Json.NodeType.ARRAY) 
+                if(list_root.get_node_type() != ConfigNodeType.Array) 
                     throw new BarConfigError.WRONG_TYPE("start should be of type `Array`");
                 
                 var list = list_root.get_array();
@@ -153,6 +153,7 @@ namespace Kappashell {
                 }
 
                 foreach(var widget in widgets) {
+                    widget.add_css_class("widget-%s".printf(orientation(this.main_anchor) == Gtk.Orientation.VERTICAL ? "v" : "h"));
                     box.append(widget);
                 }
 
@@ -161,7 +162,7 @@ namespace Kappashell {
 
             if(c.has_member("middle")) {
                 var list_root = c.get_member("middle");
-                if(list_root.get_node_type() != Json.NodeType.ARRAY) 
+                if(list_root.get_node_type() != ConfigNodeType.Array) 
                     throw new BarConfigError.WRONG_TYPE("middle should be of type `Array`");
                 
                 var list = list_root.get_array();
@@ -179,6 +180,7 @@ namespace Kappashell {
                 }
 
                 foreach(var widget in widgets) {
+                    widget.add_css_class("widget-%s".printf(orientation(this.main_anchor) == Gtk.Orientation.VERTICAL ? "v" : "h"));
                     box.append(widget);
                 }
 
@@ -187,7 +189,7 @@ namespace Kappashell {
 
             if(c.has_member("end")) {
                 var list_root = c.get_member("end");
-                if(list_root.get_node_type() != Json.NodeType.ARRAY) 
+                if(list_root.get_node_type() != ConfigNodeType.Array) 
                     throw new BarConfigError.WRONG_TYPE("end should be of type `Array`");
                 
                 var list = list_root.get_array();
@@ -205,6 +207,7 @@ namespace Kappashell {
                 }
 
                 foreach(var widget in widgets) {
+                    widget.add_css_class("widget-%s".printf(orientation(this.main_anchor) == Gtk.Orientation.VERTICAL ? "v" : "h"));
                     box.append(widget);
                 }
 
@@ -212,10 +215,10 @@ namespace Kappashell {
             }
         }
 
-        private GLib.List<Gtk.Widget> gen_widget_list(Json.Array array) throws BarConfigError {
+        private GLib.List<Gtk.Widget> gen_widget_list(ArrayConfigNode array) throws BarConfigError {
             var widgets = new GLib.List<Gtk.Widget>();
 
-            var elements = array.get_elements();
+            var elements = array.children;
 
             WidgetEnvironment env = {
                 orientation: orientation(this.main_anchor),
@@ -224,7 +227,7 @@ namespace Kappashell {
             };
 
             foreach(var element in elements) {
-                if(element.get_node_type() != Json.NodeType.OBJECT)
+                if(element.get_node_type() != ConfigNodeType.Object)
                     throw new BarConfigError.WRONG_TYPE("Elements of widget list must be of type `Object`");
 
                 var config = element.get_object();
@@ -234,7 +237,7 @@ namespace Kappashell {
 
                 var typeNode = config.get_member("type");
 
-                if(typeNode.get_node_type() != Json.NodeType.VALUE || typeNode.get_string() == null)
+                if(typeNode.get_node_type() != ConfigNodeType.String)
                     throw new BarConfigError.WRONG_TYPE("`type` property must be a string");
 
                 var type = typeNode.get_string();
@@ -244,7 +247,7 @@ namespace Kappashell {
 
                 var widget_config = config.get_member("config");
 
-                var widget = instantiate_widget(type, widget_config, env);
+                var widget = instantiate_widget(type.value, widget_config, env);
 
                 widgets.append(widget);
             }

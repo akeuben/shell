@@ -1,5 +1,5 @@
 namespace Kappashell {
-    public Gtk.Box ClockWidget(Json.Node config, WidgetEnvironment env) throws BarConfigError {
+    public Gtk.Box ClockWidget(ConfigNode config, WidgetEnvironment env) throws BarConfigError {
         var box = new Gtk.Box(env.orientation, 2);
         box.add_css_class("clock-container");
 
@@ -7,14 +7,14 @@ namespace Kappashell {
         var min = new Gtk.Label("00");
         Gtk.Label? ampm = null;
 
-        if(config.get_node_type() != Json.NodeType.OBJECT)
+        if(config.get_node_type() != ConfigNodeType.Object)
             throw new BarConfigError.WRONG_TYPE("clock config must be an object!");
 
         var c = config.get_object();
 
-        var is_24_hour = use_24_hour_time() || c.get_boolean_member_with_default("24hour", false);
+        var is_24_hour = use_24_hour_time() || c.get_bool_member_with_default("24hour", false);
 
-        if(!is_24_hour && !c.get_boolean_member_with_default("hide_ampm", false)){
+        if(!is_24_hour && !c.get_bool_member_with_default("hide_ampm", false)){
             ampm = new Gtk.Label("AM");
             ampm.yalign = 1.0f;
         }

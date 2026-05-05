@@ -18,6 +18,8 @@ dependencies = [
   dependency('libnm'),
   dependency('json-glib-1.0'),
   dependency('gio-unix-2.0'),
+  dependency('gee-0.8'),
+  dependency('yaml-0.1'),
 ]
 
 # compiling data files into a binary
