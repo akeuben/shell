@@ -5,7 +5,6 @@ namespace Kappashell {
         grid.column_homogeneous = true;
 
         NotifyHandler update_tray = () => {
-            print("The tray has %u items\n",tray.items.length());
             int i = 0;
             var child = grid.get_first_child();
             while(child != null) {
@@ -26,7 +25,7 @@ namespace Kappashell {
                 var a = item.notify["menu-model"].connect(() => menu.set_menu_model(item.menu_model));
                 var b = item.notify["action-group"].connect(() => menu.insert_action_group("dbusmenu", item.action_group));
 
-                btn.destroy.connect((self) => {
+                btn.destroy.connect(() => {
                     item.disconnect(a);
                     item.disconnect(b);
                     menu.unparent();
@@ -55,8 +54,13 @@ namespace Kappashell {
             }
         };
 
-        tray.item_added.connect(() => update_tray());
-        tray.item_removed.connect(() => update_tray());
+        var a = tray.item_added.connect(() => update_tray());
+        var b = tray.item_removed.connect(() => update_tray());
+
+        grid.destroy.connect(() => {
+            tray.disconnect(a);
+            tray.disconnect(b);
+        });
 
         update_tray();
 

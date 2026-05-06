@@ -33,7 +33,9 @@ namespace Kappashell {
             }
         };
 
-        bluetooth.notify["is-powered"].connect(() => update_icon());
+        var a = bluetooth.notify["is-powered"].connect(() => update_icon());
+
+        img.disconnect(a);
 
         update_icon();
 
@@ -71,7 +73,7 @@ namespace Kappashell {
             }
         };
 
-        network.notify["primary"].connect(() => update_icon());
+        var primary = network.notify["primary"].connect(() => update_icon());
 
         network.notify["wifi"].connect(() => {
             if (wifi_icon_connect != 0) {
@@ -92,7 +94,7 @@ namespace Kappashell {
             if (network.wired != null) {
                 wired_icon_connect = network.wired.notify["icon-name"].connect(() => update_icon());
             }
-                update_icon();
+            update_icon();
         });
 
         if (network.wifi != null) {
@@ -103,6 +105,10 @@ namespace Kappashell {
         }
 
         update_icon();
+
+        img.destroy.connect(() => {
+            network.disconnect(primary);
+        });
 
         var bin = new Astal.Bin();
         bin.child = img;

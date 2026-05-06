@@ -72,8 +72,10 @@ public class KappashellDesktop : Gtk.Application {
                 var monitor = (Gdk.Monitor) monitors.get_item(i);
 
                 var barset = new Kappashell.BarSet(monitor);
+                var popupset = new Kappashell.PopupSet(monitor);
 
                 barset.add_windows(this);
+                popupset.add_windows(this);
 
                 bars.set(monitor, barset);
             }

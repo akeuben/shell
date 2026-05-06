@@ -24,6 +24,7 @@ namespace Kappashell {
 
             destroy.connect(() => {
                 hyprland.notify.disconnect(update_list);
+                monitor.notify.disconnect(update_list);
             });
 
             update_list();
@@ -47,7 +48,7 @@ namespace Kappashell {
                 btn.tooltip_text = client.title;
                 ((Gtk.Image) btn.child).pixel_size = 24;
 
-                btn.clicked.connect(() => client.focus());
+                btn.clicked.connect(client.focus);
 
                 append(btn);
             }
@@ -70,6 +71,8 @@ namespace Kappashell {
     class HyprlandClientWidget : Gtk.Box {
 
         AstalHyprland.Hyprland hyprland;
+        RotatedLabel label;
+        Gtk.Image icon;
         
         public HyprlandClientWidget(ConfigNode config, WidgetEnvironment env) {
             this.hyprland = AstalHyprland.get_default();
@@ -78,35 +81,39 @@ namespace Kappashell {
             this.add_css_class("bar-item");
             this.add_css_class("client");
 
-            var icon = new Gtk.Image();
+            icon = new Gtk.Image();
             icon.pixel_size = 24;
-            var label = new RotatedLabel("", 90);
+            label = new RotatedLabel("", 90);
             var btn = new Gtk.Button();
             btn.icon_name = "close-symbolic";
 
-            NotifyHandler update_label = () => {
-                if(hyprland.focused_client == null) {
-                    label.label = "";
-                    visible = false;
-                    return;
-                }
+            hyprland.notify["focused-client"].connect(update_label);
 
-                label.label = hyprland.focused_client.title;
-                visible = true;
-                if(label.label.length > 25) {
-                    label.label = "%s...".printf(label.label.substring(0, 25));
-                }
-
-                icon.set_from_icon_name(get_icon_name_for_hypr_client(hyprland.focused_client));
-            };
-
-            hyprland.notify["focused-client"].connect(() => update_label());
+            destroy.connect(() => {
+                hyprland.notify.disconnect(update_label);
+            });
 
             update_label();
 
             append(icon);
             append(label);
             append(btn);
+        }
+
+        void update_label() {
+            if(hyprland.focused_client == null) {
+                label.label = "";
+                visible = false;
+                return;
+            }
+
+            label.label = hyprland.focused_client.title;
+            visible = true;
+            if(label.label.length > 25) {
+                label.label = "%s...".printf(label.label.substring(0, 25));
+            }
+
+            icon.set_from_icon_name(get_icon_name_for_hypr_client(hyprland.focused_client));
         }
 
     }
