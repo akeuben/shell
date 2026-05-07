@@ -55,6 +55,8 @@ namespace Kappashell {
 
         public void set_radius(int radius) {
             this.radius = radius;
+            set_content_width (radius);
+            set_content_height (radius);
         }
 
         public override void snapshot(Gtk.Snapshot snapshot) {

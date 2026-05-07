@@ -48,7 +48,6 @@ namespace Kappashell {
                 var ast = ConfigNode.fromYaml(document, *root);
 
                 this.config_changed(ast);
-                print(ast.to_string());
             }
         }
     }
