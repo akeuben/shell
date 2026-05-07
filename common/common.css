@@ -12,8 +12,14 @@ popovermenu slider {
     min-height: 0px;
 }
 
+.popup-window.dim {
+    background-color: #000000aa;
+}
+
 .popup-window {
     background: transparent;
+    transition: background-color 0.25s linear;
+    border-radius: 30px;
 }
 
 .popup-content {
@@ -25,21 +31,22 @@ popovermenu slider {
 .popup-content>* {
     min-width: 45px;
     min-height: 45px;
+    padding: 10px;
 }
 
-.popup-content.open.top {
+.popup-content.top {
     border-radius: 0px 0px 30px 30px;
 }
 
-.popup-content.open.right {
+.popup-content.right {
     border-radius: 30px 0px 0px 30px;
 }
 
-.popup-content.open.bottom {
+.popup-content.bottom {
     border-radius: 30px 30px 0px 0px;
 }
 
-.popup-content.open.left {
+.popup-content.left {
     border-radius: 0px 30px 30px 0px;
 }
 

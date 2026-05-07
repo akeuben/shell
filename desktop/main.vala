@@ -125,6 +125,7 @@ public class KappashellDesktop : Gtk.Application {
                 error_window.add_error(error.message);
             });
 
+            popups = new Kappashell.PopupSet();
             for(var i = 0; i < monitors.get_n_items (); i++) {
                 var monitor = (Gdk.Monitor) monitors.get_item(i);
 
@@ -134,8 +135,6 @@ public class KappashellDesktop : Gtk.Application {
 
                 bars.set(monitor, barset);
             }
-            popups = new Kappashell.PopupSet();
-
         }
 
         return 0;
@@ -145,6 +144,19 @@ public class KappashellDesktop : Gtk.Application {
         var content = Kappashell.lookup_popup(popup);
 
         popups.open_popup(content, side);
+    }
+
+    public void dim() {
+        print("Dimming on %u monitors\n", this.bars.length);
+        this.bars.foreach((monitor, bar) => {
+            bar.dim();
+        });
+    }
+
+    public void undim() {
+        this.bars.foreach((monitor, bar) => {
+            bar.undim();
+        });
     }
 
     public void closePopup(Astal.WindowAnchor side) {

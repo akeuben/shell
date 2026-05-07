@@ -52,6 +52,15 @@ namespace Kappashell {
                 this.right.update_config(c.get_member("right"));
             }
         }
+
+        public void dim() {
+            overlay.add_css_class("dim");
+            print("DIMMING!");
+        }
+
+        public void undim() {
+            overlay.remove_css_class("dim");
+        }
     }
 
     class Bar : Astal.Window {

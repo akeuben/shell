@@ -68,15 +68,48 @@ namespace Kappashell {
         private Gtk.Revealer revealer;
         
         public Popup(Astal.WindowAnchor anchor) {
-            this.anchor = anchor;
+            this.anchor = Astal.WindowAnchor.TOP | Astal.WindowAnchor.BOTTOM | Astal.WindowAnchor.LEFT | Astal.WindowAnchor.RIGHT; 
             this.namespace = "kappashell.desktop.popup.%s".printf(name(anchor));
             this.exclusivity = Astal.Exclusivity.NORMAL;
+            this.keymode = Astal.Keymode.NONE;
             set_default_size(1, 1);
             this.add_css_class("popup-window");
-
             this.environment.orientation = determineOrientation(anchor);
 
+            var keyhandler = new Gtk.EventControllerKey();
+            keyhandler.key_released.connect((keyval) => {
+                if(keyval == Gdk.Key.Escape) {
+                    close_popup();
+                }
+            });
+            var mouseHandler = new Gtk.GestureClick();
+            mouseHandler.propagation_phase = Gtk.PropagationPhase.TARGET;
+            mouseHandler.pressed.connect(() => {
+                close_popup();
+            });
+            ((Gtk.Widget) this).add_controller(keyhandler);
+            ((Gtk.Widget) this).add_controller(mouseHandler);
+
             var cbox = new Gtk.CenterBox();
+            switch(anchor) {
+                case Astal.WindowAnchor.TOP:
+                    cbox.halign = Gtk.Align.CENTER;
+                    cbox.valign = Gtk.Align.START;
+                    break;
+                case Astal.WindowAnchor.BOTTOM:
+                    cbox.halign = Gtk.Align.CENTER;
+                    cbox.valign = Gtk.Align.END;
+                    break;
+                case Astal.WindowAnchor.LEFT:
+                    cbox.halign = Gtk.Align.START;
+                    cbox.valign = Gtk.Align.CENTER;
+                    break;
+                case Astal.WindowAnchor.RIGHT:
+                    cbox.halign = Gtk.Align.END;
+                    cbox.valign = Gtk.Align.CENTER;
+                    break;
+                case Astal.WindowAnchor.NONE: break;
+            }
             cbox.orientation = determineOrientation(anchor);
             startCorner = new InvertedCorner(0, determineStartCorner(anchor));
             endCorner = new InvertedCorner(0, determineEndCorner(anchor));
@@ -110,14 +143,18 @@ namespace Kappashell {
                 if(revealer.reveal_child) {
                     print("Revealing child!");
                     this.visible = true;
+                    this.keymode = Astal.Keymode.EXCLUSIVE;
                     revealer.add_css_class("open");
                     this.startCorner.set_radius_animated(30, 0.25);
                     this.endCorner.set_radius_animated(30, 0.25);
+                    this.capture_clicks();
                 } else {
                     print("Hiding child!");
                     revealer.remove_css_class("open");
                     this.startCorner.set_radius_animated(0, 0.25);
                     this.endCorner.set_radius_animated(0, 0.25);
+                    this.keymode = Astal.Keymode.NONE;
+                    this.ignore_clicks();
                     GLib.Timeout.add_once(250, () => {
                         this.visible = false;
                     });
@@ -128,11 +165,36 @@ namespace Kappashell {
 
             set_child(cbox);
             present();
+            this.ignore_clicks();
+        }
+
+        private void capture_clicks() {
+            var region = new Cairo.Region.rectangle({
+                x: 0,
+                y: 0,
+                width: this.get_width(),
+                height: this.get_height(),
+            });
+
+            get_native().get_surface().set_input_region(region);
+        }
+
+        private void ignore_clicks() {
+            var region = new Cairo.Region.rectangle({
+                x: 0,
+                y: 0,
+                width: 0,
+                height: 0,
+            });
+
+            get_native().get_surface().set_input_region(region);
         }
 
         public void open_popup(PopupContent content) {
+            this.add_css_class("dim");
+            print("add dim");
             if (this.revealer.child_revealed) {
-                this.close_popup();
+                this.revealer.reveal_child = false;
                 // we have to use add here and not add once since vala will 
                 // not think that this function is async, resulting in content from 
                 // being unref'ed and giving us a segfault.
@@ -148,6 +210,8 @@ namespace Kappashell {
         }
 
         public void close_popup() {
+            this.remove_css_class("dim");
+            print("remove dim");
             this.revealer.reveal_child = false;
         }
 
