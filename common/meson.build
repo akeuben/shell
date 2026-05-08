@@ -6,6 +6,7 @@ dependencies = [
   dependency('gtk4'),
   dependency('gtk4-layer-shell-0'),
   dependency('astal-4-4.0'),
+  dependency('astal-apps-0.1'),
   dependency('astal-io-0.1'),
   dependency('astal-battery-0.1'),
   dependency('astal-wireplumber-0.1'),

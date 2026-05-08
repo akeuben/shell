@@ -75,6 +75,7 @@ namespace Kappashell {
             set_default_size(1, 1);
             this.add_css_class("popup-window");
             this.environment.orientation = determineOrientation(anchor);
+            this.environment.popup = this;
 
             var keyhandler = new Gtk.EventControllerKey();
             keyhandler.key_released.connect((keyval) => {

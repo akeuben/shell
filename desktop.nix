@@ -17,6 +17,7 @@
         buildInputs = let 
             astalDeps = with astal.packages.${system}; [
                 astal4
+                apps
                 io
                 battery
                 wireplumber 
