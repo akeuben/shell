@@ -34,7 +34,7 @@ namespace Kappashell {
             var box = new Gtk.Box(Gtk.Orientation.VERTICAL, 10);
             var search = new Gtk.SearchEntry();
             search.placeholder_text = "Search Anything...";
-            search.width_chars = 50;
+            search.width_chars = 75;
 
             search.map.connect (() => {
                 print("grab\n");

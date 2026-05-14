@@ -8,6 +8,20 @@ namespace Kappashell {
             this.setup_config_monitor(path);
         }
 
+        public static void EnsureExists(string path, string default_resource) {
+            var config_file = GLib.File.new_for_path(path);
+            if(!config_file.query_exists()) {
+                try {
+                    var resource_stream = GLib.resources_open_stream(default_resource, GLib.ResourceLookupFlags.NONE);
+                    var dest_file = GLib.File.new_for_path(path);
+                    var dest_stream = dest_file.create(GLib.FileCreateFlags.NONE);
+                    dest_stream.splice(resource_stream, GLib.OutputStreamSpliceFlags.CLOSE_SOURCE | GLib.OutputStreamSpliceFlags.CLOSE_TARGET);
+                } catch (Error e) {
+                    print("Error copying config: %s", e.message);
+                }
+            }
+        }
+
         private void setup_config_monitor(string path) {
             var file = GLib.File.new_for_path(path);
             try {

@@ -35,83 +35,48 @@ public class KappashellDesktop : Gtk.Application {
 
         config_dir = GLib.Path.build_path("/", GLib.Environment.get_user_config_dir(), "kappashell");
         config_path = GLib.Path.build_path("/", config_dir, "config.yaml");
-        print("Bar config path: %s\n", config_path);
-        var config_file = GLib.File.new_for_path(config_path);
-        if(!config_file.query_exists()) {
-            try {
-                var resource_stream = GLib.resources_open_stream("/config/config.yaml", GLib.ResourceLookupFlags.NONE);
-                var dest_file = GLib.File.new_for_path(config_path);
-                var dest_stream = dest_file.create(GLib.FileCreateFlags.NONE);
-                dest_stream.splice(resource_stream, GLib.OutputStreamSpliceFlags.CLOSE_SOURCE | GLib.OutputStreamSpliceFlags.CLOSE_TARGET);
-            } catch (Error e) {
-                print("Error copying config: %s", e.message);
-            }
-        }
+        Config.EnsureExists(config_path, "config/config.yaml");
         desktop_config = new Config(config_path);
     }
 
     public override int command_line(ApplicationCommandLine command_line) {
-        var argv = command_line.get_arguments();
-
         if(command_line.is_remote) {
-            command_line.print_literal("You called?\n");
+            var cmd = new Command.Builder("Kappashell")
+                .description("A custom desktop shell")
+                .subcommand("debug", new Command.Builder("debug")
+                    .description("Display the debugger")
+                    .handler(() => {
+                        Gtk.Window.set_interactive_debugging(true);
+                    })
+                    .build()
+                )
+                .subcommand("popup", new Command.Builder("popup")
+                    .description("Manage popup menus")
+                    .subcommand("open", new Command.Builder("popup:open")
+                        .description("Open a given popup")
+                        .argument(new EnumArgument("popup", list_to_array(Kappashell.popup_list())))
+                        .argument(new EnumArgument("side", new string[] {"left", "right", "top", "bottom"}))
+                        .handler((ctx) => {
+                            var popup = ctx.get_string("popup");
+                            var side = ctx.get_string("side");
+                            openPopup(popup, side);
+                        })
+                        .build()
+                    )
+                    .subcommand("close", new Command.Builder("popup:close")
+                        .description("Close a given popup")
+                        .argument(new EnumArgument("side", new string[] {"left", "right", "top", "bottom"}))
+                        .handler((ctx) => {
+                            var side = ctx.get_string("side");
+                            closePopup(side);
+                        })
+                        .build()
+                    )
+                    .build()
+                )
+                .build();
 
-            // TODO: Make this into some kind of object tree for convenience!
-            if(argv.length > 1) {
-                if(argv[1] == "debug") {
-                    Gtk.Window.set_interactive_debugging(true);
-                } else if(argv[1] == "popup") {
-                    if(argv[2] == "open") {
-                        if(argv.length != 5) {
-                            command_line.printerr("Usage: %s popup open <popup> left|right|top|bottom", argv[0]);
-                            return 1;
-                        }
-                        var popup = argv[3];
-                        var side = argv[4];
-                        var anchor = Astal.WindowAnchor.NONE;
-
-                        if(!Kappashell.popup_exists(popup)) {
-                            command_line.printerr("Unknown popup %s. Known popups:", popup);
-                            Kappashell.popup_list().foreach((p) => {
-                                command_line.printerr("\t%s", p);
-                            });
-                            return 1;
-                        }
-                        
-                        if(side == "left") anchor = Astal.WindowAnchor.LEFT;
-                        else if(side == "right") anchor = Astal.WindowAnchor.RIGHT;
-                        else if(side == "top") anchor = Astal.WindowAnchor.TOP;
-                        else if(side == "bottom") anchor = Astal.WindowAnchor.BOTTOM;
-                        else {
-                            command_line.printerr("Usage: %s popup open <popup> left|right|top|bottom", argv[0]);
-                            return 1;
-                        }
-                        
-                        openPopup(popup, anchor);
-                    } else if(argv[2] == "close") {
-                        if(argv.length != 4) {
-                            command_line.printerr("Usage: %s popup close left|right|top|bottom", argv[0]);
-                            return 1;
-                        }
-                        var side = argv[3];
-                        var anchor = Astal.WindowAnchor.NONE;
-
-                        if(side == "left") anchor = Astal.WindowAnchor.LEFT;
-                        else if(side == "right") anchor = Astal.WindowAnchor.RIGHT;
-                        else if(side == "top") anchor = Astal.WindowAnchor.TOP;
-                        else if(side == "bottom") anchor = Astal.WindowAnchor.BOTTOM;
-                        else {
-                            command_line.printerr("Usage: %s popup close left|right|top|bottom", argv[0]);
-                            return 1;
-                        }
-                        
-                        closePopup(anchor);
-                    } else {
-                        command_line.printerr("Usage: %s popup open|close", argv[0]);
-                        return 1;
-                    }
-                }
-            }
+            cmd.execute(command_line);
         } else {
             command_line.print_literal("Hello from the main instance\n");
 
@@ -140,10 +105,16 @@ public class KappashellDesktop : Gtk.Application {
         return 0;
     }
 
-    public void openPopup(string popup, Astal.WindowAnchor side) {
+    public void openPopup(string popup, string side) {
         var content = Kappashell.lookup_popup(popup);
 
-        popups.open_popup(content, side);
+        var anchor = Astal.WindowAnchor.NONE;
+        if(side == "left") anchor = Astal.WindowAnchor.LEFT;
+        else if(side == "right") anchor = Astal.WindowAnchor.RIGHT;
+        else if(side == "top") anchor = Astal.WindowAnchor.TOP;
+        else if(side == "bottom") anchor = Astal.WindowAnchor.BOTTOM;                            
+
+        popups.open_popup(content, anchor);
     }
 
     public void dim() {
@@ -159,8 +130,14 @@ public class KappashellDesktop : Gtk.Application {
         });
     }
 
-    public void closePopup(Astal.WindowAnchor side) {
-        popups.close_popup(side);
+    public void closePopup(string side) {
+        var anchor = Astal.WindowAnchor.NONE;
+        if(side == "left") anchor = Astal.WindowAnchor.LEFT;
+        else if(side == "right") anchor = Astal.WindowAnchor.RIGHT;
+        else if(side == "top") anchor = Astal.WindowAnchor.TOP;
+        else if(side == "bottom") anchor = Astal.WindowAnchor.BOTTOM;                            
+
+        popups.close_popup(anchor);
     }
 
     private void on_bar_config_changed(ConfigNode node) {
