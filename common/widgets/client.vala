@@ -41,7 +41,7 @@ namespace Kappashell {
                 if(monitor.active_workspace.clients.find_custom(client, compare_hypr_clients) == null)
                     continue;
 
-                if(compare_hypr_clients(client, hyprland.focused_client) == 0)
+                if(hyprland.focused_client != null && compare_hypr_clients(client, hyprland.focused_client) == 0)
                     continue;
 
                 var btn = new Gtk.Button.from_icon_name(get_icon_name_for_hypr_client(client));
@@ -56,6 +56,12 @@ namespace Kappashell {
     }
 
     int compare_hypr_clients(AstalHyprland.Client a, AstalHyprland.Client b) {
+        if(a == null && b == null) {
+            return 0;
+        }
+        if(a == null || b == null) {
+            return 1;
+        }
         if(a.pid != b.pid) {
             return 1;
         }
@@ -86,6 +92,7 @@ namespace Kappashell {
             label = new RotatedLabel("", 90);
             var btn = new Gtk.Button();
             btn.icon_name = "close-symbolic";
+            btn.clicked.connect(() => hyprland.focused_client.kill());
 
             hyprland.notify["focused-client"].connect(update_label);
 

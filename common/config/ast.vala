@@ -136,6 +136,10 @@ namespace Kappashell {
             return mappings.contains(key);
         }
 
+        public bool has_string_member(string key) {
+            return has_member(key) && get_member(key).get_node_type() == ConfigNodeType.String;
+        }
+
         public ConfigNode get_member(string key) {
             assert_true(mappings.contains(key));
             return mappings.get(key);

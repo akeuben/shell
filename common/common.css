@@ -17,6 +17,17 @@ entry {
     border-radius: 20px;
 }
 
+button {
+    margin: 0px;
+    padding: 0px 0px;
+    min-width: 24px;
+    min-height: 24px;
+}
+
+button:hover {
+    transform: scale(1.2);
+}
+
 .result.selected {
     border: 2px solid @accent-color;
 }

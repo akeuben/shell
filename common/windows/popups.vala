@@ -142,7 +142,6 @@ namespace Kappashell {
 
             revealer.notify["reveal-child"].connect(() => {
                 if(revealer.reveal_child) {
-                    print("Revealing child!");
                     this.visible = true;
                     this.keymode = Astal.Keymode.EXCLUSIVE;
                     revealer.add_css_class("open");
@@ -150,7 +149,6 @@ namespace Kappashell {
                     this.endCorner.set_radius_animated(30, 0.25);
                     this.capture_clicks();
                 } else {
-                    print("Hiding child!");
                     revealer.remove_css_class("open");
                     this.startCorner.set_radius_animated(0, 0.25);
                     this.endCorner.set_radius_animated(0, 0.25);
@@ -193,7 +191,6 @@ namespace Kappashell {
 
         public void open_popup(PopupContent content) {
             this.add_css_class("dim");
-            print("add dim");
             if (this.revealer.child_revealed) {
                 this.revealer.reveal_child = false;
                 // we have to use add here and not add once since vala will 
@@ -212,7 +209,6 @@ namespace Kappashell {
 
         public void close_popup() {
             this.remove_css_class("dim");
-            print("remove dim");
             this.revealer.reveal_child = false;
         }
 

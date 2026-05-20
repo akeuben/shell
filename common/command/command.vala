@@ -14,27 +14,63 @@ namespace Kappashell {
     }
 
     public delegate void HandleCommand(Context ctx);
+    private delegate void print_literal(string msg);
 
-    public class Context {
-        private HashTable<string, GLib.Value?> args = new HashTable<string, GLib.Value?>(str_hash, str_equal);
-        private ApplicationCommandLine cmdline;
+    public class CommandLine {
+        private print_literal stdout;
+        private print_literal stderr;
 
-        public Context(ApplicationCommandLine cmdline) {
-            this.cmdline = cmdline;
+        private string[] args;
+        
+        public CommandLine.fromGLib(GLib.ApplicationCommandLine cmdline) {
+            stdout = cmdline.print_literal;
+            stderr = cmdline.printerr_literal;
+            args = cmdline.get_arguments();
+        }
+
+        public CommandLine.fromArgs(string[] args) {
+            stdout = (msg) => GLib.print("%s\n", msg);
+            stderr = (msg) => GLib.printerr("%s\n", msg);
+            this.args = args;
         }
 
         [PrintfFormat]
         public void print(string format, ...) {
             var args = va_list();
             string message = format.vprintf(args);
-            cmdline.print_literal(message);
+            stdout(message);
         }
 
         [PrintfFormat]
         public void printerr(string format, ...) {
             var args = va_list();
             string message = format.vprintf(args);
-            cmdline.printerr_literal(message);
+            stderr(message);
+        }
+
+        public string[] get_arguments() {
+            return args;
+        }
+    }
+
+    public class Context {
+        private HashTable<string, GLib.Value?> args = new HashTable<string, GLib.Value?>(str_hash, str_equal);
+        private CommandLine cmdline;
+
+        public Context(CommandLine cmdline) {
+            this.cmdline = cmdline;
+        }
+
+        [PrintfFormat]
+        public void print(string format, ...) {
+            var args = va_list();
+            cmdline.print(format, args);
+        }
+
+        [PrintfFormat]
+        public void printerr(string format, ...) {
+            var args = va_list();
+            cmdline.printerr(format, args);
         }
 
         public void set(string arg, GLib.Value value) {
@@ -97,8 +133,8 @@ namespace Kappashell {
                 return this;
             }
 
-            public Builder handler(HandleCommand handler) {
-                instance.handler = handler;
+            public Builder handler(owned HandleCommand handler) {
+                instance.handler = (owned) handler;
                 instance.kind = CommandType.LEAF;
                 return this;
             }
@@ -112,11 +148,11 @@ namespace Kappashell {
             this.name = name;
         }
         
-        public void execute(ApplicationCommandLine cmdline) {
+        public void execute(CommandLine cmdline) {
             execute_internal("", cmdline.get_arguments(), cmdline);
         }
 
-        private void execute_internal(string prefix, string[] argv, ApplicationCommandLine cmdline) {
+        private void execute_internal(string prefix, string[] argv, CommandLine cmdline) {
             var cmd = prefix + " " + argv[0];
             argv = argv[1:argv.length];
 
@@ -135,7 +171,7 @@ namespace Kappashell {
 
         }
 
-        private void execute_leaf(string[] argv, string cmd, ApplicationCommandLine cmdline) throws ParseError {
+        private void execute_leaf(string[] argv, string cmd, CommandLine cmdline) throws ParseError {
             var ctx = new Context(cmdline);
 
             if(argv.length != args.length()) {
@@ -154,7 +190,7 @@ namespace Kappashell {
             handler(ctx);
         }
 
-        private void execute_node(string[] argv, string cmd, ApplicationCommandLine cmdline) throws ParseError {
+        private void execute_node(string[] argv, string cmd, CommandLine cmdline) throws ParseError {
             if(argv.length == 0) {
                 throw new ParseError.INVALID_FORMAT("No subcommand provided!");
             }
@@ -167,7 +203,7 @@ namespace Kappashell {
             subcommand.execute_internal(cmd, argv, cmdline);
         }
 
-        private void print_usage(ParseError e, string cmd, ApplicationCommandLine cmdline) {
+        private void print_usage(ParseError e, string cmd, CommandLine cmdline) {
             cmdline.printerr("Error: %s\n", e.message);
             cmdline.printerr("\n");
             cmdline.printerr("%s Help:\n", name);
