@@ -51,6 +51,10 @@ public abstract class KappashellApplication : Gtk.Application {
         } else {
             var monitors = Gdk.Display.get_default().get_monitors();
 
+            register_widgets();
+            setup_css();
+            setup();
+
             error_window = new ErrorWindow();
             popups = new Kappashell.PopupSet();
 
@@ -63,10 +67,6 @@ public abstract class KappashellApplication : Gtk.Application {
 
                 bars.set(monitor, barset);
             }
-
-            register_widgets();
-            setup_css();
-            setup();
         }
 
         return 0;

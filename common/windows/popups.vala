@@ -191,13 +191,13 @@ namespace Kappashell {
                     this.visible = true;
                     this.keymode = Astal.Keymode.EXCLUSIVE;
                     revealer.add_css_class("open");
-                    this.startCorner.set_radius_animated(30, 0.25);
-                    this.endCorner.set_radius_animated(30, 0.25);
+                    this.startCorner.set_radius_animated(15, 0.125);
+                    this.endCorner.set_radius_animated(15, 0.125);
                     this.capture_clicks();
                 } else {
                     revealer.remove_css_class("open");
-                    this.startCorner.set_radius_animated(0, 0.25);
-                    this.endCorner.set_radius_animated(0, 0.25);
+                    this.startCorner.set_radius_animated(0, 0.125);
+                    this.endCorner.set_radius_animated(0, 0.125);
                     this.keymode = Astal.Keymode.NONE;
                     this.ignore_clicks();
                     GLib.Timeout.add_once(250, () => {
@@ -255,7 +255,6 @@ namespace Kappashell {
 
         public void close_popup() {
             this.remove_css_class("dim");
-            print("remove dim");
             this.revealer.reveal_child = false;
         }
 
