@@ -1,5 +1,5 @@
 namespace Kappashell {
-    const int BAR_MARGIN = 5;
+    const int BAR_MARGIN = 0;
 
     public errordomain BarConfigError {
         WRONG_TYPE,
@@ -150,6 +150,7 @@ namespace Kappashell {
                 var list = list_root.get_array();
 
                 var widgets = gen_widget_list(list);
+
 
                 var box = new Gtk.Box(orientation(main_anchor), 10);
 

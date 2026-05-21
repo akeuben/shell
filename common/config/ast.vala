@@ -140,6 +140,15 @@ namespace Kappashell {
             return has_member(key) && get_member(key).get_node_type() == ConfigNodeType.String;
         }
 
+        public bool has_bool_member(string key) {
+            return has_member(key) && get_member(key).get_node_type() == ConfigNodeType.Bool;
+        }
+
+        public GLib.List<weak string> get_keys() {
+            return mappings.get_keys();
+        }
+
+
         public ConfigNode get_member(string key) {
             assert_true(mappings.contains(key));
             return mappings.get(key);

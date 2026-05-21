@@ -1,9 +1,12 @@
 namespace Kappashell {
+    [CCode (cname = "kappashell_add_css_provider")]
+    extern void add_css_provider(Gdk.Display display, Gtk.StyleProvider provider, uint priority);
+
     public void setup_css() {
         var provider = new Gtk.CssProvider();
         provider.load_from_resource("/styles/common.css");
 
-        Gtk.StyleContext.add_provider_for_display(
+        add_css_provider(
             Gdk.Display.get_default(),
             provider,
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
@@ -16,7 +19,7 @@ namespace Kappashell {
         var custom = new Gtk.CssProvider();
         if(f.query_exists()) {
             custom.load_from_resource(custom_sheet_location);
-            Gtk.StyleContext.add_provider_for_display(Gdk.Display.get_default(), custom, Gtk.STYLE_PROVIDER_PRIORITY_USER);
+            add_css_provider(Gdk.Display.get_default(), custom, Gtk.STYLE_PROVIDER_PRIORITY_USER);
         }
 
     }

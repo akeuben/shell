@@ -1,5 +1,7 @@
 glob = run_command('find', '.', '-name', '*.vala')
-sources = glob.stdout().strip().split('\n')
+sources = glob.stdout().strip().split('\n')  + [
+  'style.c'
+]
 
 dependencies = [
   dependency('glib-2.0'),

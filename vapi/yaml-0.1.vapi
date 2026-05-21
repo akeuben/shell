@@ -1162,13 +1162,10 @@ public struct Parser {
 	/* The indentation levels stack. */
 
 	/** The beginning of the indentation levels stack. */
-	[CCode (cnme = "indents.start")]
 	int? indents_start;
 	/** The end of the indentation levels stack. */
-	[CCode (cnme = "indents.end")]
 	int? indents_end;
 	/** The top of the indentation levels stack. */
-	[CCode (cnme = "indents.top")]
 	int? indents_top;
 
 	/** The current indentation level. */

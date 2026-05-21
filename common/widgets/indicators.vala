@@ -35,7 +35,9 @@ namespace Kappashell {
 
         var a = bluetooth.notify["is-powered"].connect(() => update_icon());
 
-        img.disconnect(a);
+        img.destroy.connect(() => {
+            bluetooth.disconnect(a);
+        });
 
         update_icon();
 

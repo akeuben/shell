@@ -17,6 +17,18 @@ entry {
     border-radius: 20px;
 }
 
+.debug {
+    background: red;
+}
+
+.widget-v, .widget-h {
+    margin: 5px;
+}
+
+.widget-v.region, .widget-h.region {
+    margin: 0px;
+}
+
 button {
     margin: 0px;
     padding: 0px 0px;

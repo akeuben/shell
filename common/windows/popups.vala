@@ -4,6 +4,7 @@ namespace Kappashell {
         private Popup right;
         private Popup top;
         private Popup bottom;
+        private HashTable<string, PopupContent> registered_popups;
 
         public PopupSet() {
             left = new Popup(Astal.WindowAnchor.LEFT);
@@ -55,6 +56,51 @@ namespace Kappashell {
                 default:
                     break;
             }
+        }
+
+        public void on_popup_config_changed(ConfigNode config) throws PopupConfigError {
+            if(config.get_node_type() != ConfigNodeType.Object)
+                throw new PopupConfigError.WRONG_TYPE("root should be of type `Object`");
+
+            var c = config.get_object();
+
+            if(registered_popups == null)
+                registered_popups = new GLib.HashTable<string, PopupContent>((a) => a.hash(), (a, b) => a == b);
+
+            registered_popups.remove_all();
+
+            foreach(var name in c.get_keys()) {
+                var pconfig = c.get_member(name);
+                if(pconfig.get_node_type() != ConfigNodeType.Object) {
+                    throw new PopupConfigError.WRONG_TYPE("Popups must be of type `Object`");
+                }
+                var pc = pconfig.get_object();
+                if(!pc.has_member("type")) {
+                    throw new PopupConfigError.MISSING_VALUE("Popups must declare a `type` property.");
+                }
+                var type = pc.get_string_member("type");
+                var cfg = pc.get_member_with_default("config", new NoneConfigNode());
+
+                if(!popup_type_exists(type)) {
+                    throw new PopupConfigError.WRONG_TYPE("Popup type is not valid.");
+                }
+
+                var popup = lookup_popup_type(type).constructor(cfg);
+                
+                registered_popups.insert(name, popup);
+            }
+        }
+
+        public PopupContent lookup_popup(string name) {
+            return registered_popups.lookup(name);
+        }
+
+        public bool popup_exists(string name) {
+            return registered_popups.contains(name);
+        }
+
+        public GLib.List<weak string> popup_list() {
+            return registered_popups.get_keys();
         }
     }
 
@@ -209,8 +255,10 @@ namespace Kappashell {
 
         public void close_popup() {
             this.remove_css_class("dim");
+            print("remove dim");
             this.revealer.reveal_child = false;
         }
+
 
         private static new string name(Astal.WindowAnchor anchor) {
             if(anchor == Astal.WindowAnchor.TOP) {

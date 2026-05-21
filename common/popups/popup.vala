@@ -1,5 +1,17 @@
 namespace Kappashell {
-    private HashTable<string, PopupContent> registered_popups;
+    [CCode (has_target = false)]
+    public delegate PopupContent PopupConstructor(ConfigNode config) throws PopupConfigError;
+
+    private HashTable<string, RegisteredPopup?> registered_popup_types;
+    public struct RegisteredPopup {
+        public string name;
+        public PopupConstructor constructor;
+    }
+
+    public errordomain PopupConfigError {
+        WRONG_TYPE,
+        MISSING_VALUE,
+    }
 
     public struct PopupEnvironment {
         Gtk.Orientation orientation;
@@ -34,23 +46,38 @@ namespace Kappashell {
         }
     }
 
-    public void register_popup(string name, PopupContent content) {
-        if(registered_popups == null) {
-            registered_popups = new HashTable<string, PopupContent>((a) => a.hash(), (a, b) => a == b);
+    public void register_popup_type(string name, PopupConstructor constructor) {
+        if(registered_popup_types == null) {
+            registered_popup_types = new HashTable<string, RegisteredPopup?>((a) => a.hash(), (a, b) => a == b);
         }
 
-        registered_popups.set(name, content);
+        registered_popup_types.set(name, {
+            name: name,
+            constructor: constructor,
+        });
     }
 
-    public PopupContent lookup_popup(string name) {
-        return registered_popups.lookup(name);
+    public RegisteredPopup lookup_popup_type(string name) {
+        if(registered_popup_types == null) {
+            registered_popup_types = new HashTable<string, RegisteredPopup?>((a) => a.hash(), (a, b) => a == b);
+        }
+        
+        return registered_popup_types.lookup(name);
     }
 
-    public bool popup_exists(string name) {
-        return registered_popups.contains(name);
+    public bool popup_type_exists(string name) {
+        if(registered_popup_types == null) {
+            registered_popup_types = new HashTable<string, RegisteredPopup?>((a) => a.hash(), (a, b) => a == b);
+        }
+
+        return registered_popup_types.contains(name);
     }
 
-    public GLib.List<weak string> popup_list() {
-        return registered_popups.get_keys();
+    public GLib.List<weak string> popup_type_list() {
+        if(registered_popup_types == null) {
+            registered_popup_types = new HashTable<string, RegisteredPopup?>((a) => a.hash(), (a, b) => a == b);
+        }
+
+        return registered_popup_types.get_keys();
     }
 }

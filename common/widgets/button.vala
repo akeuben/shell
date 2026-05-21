@@ -33,7 +33,7 @@ namespace Kappashell {
         var action = c.get_string_member("action");
 
         if(action_type == "action") {
-            btn.clicked.connect(() => KappashellApplication.instance.run_action(action));
+            btn.clicked.connect(() => KappashellApplication.instance.run_action("> " + action));
         } else if(action_type == "shell") {
             btn.clicked.connect(() => printerr("TODO!\n"));
         } else {

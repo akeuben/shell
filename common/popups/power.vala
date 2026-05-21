@@ -1,5 +1,8 @@
 namespace Kappashell {
     public class PowerPopup : PopupContent {
+        public static PowerPopup create(ConfigNode config) throws PopupConfigError {
+            return new PowerPopup();
+        }
 
         public override Gtk.Widget build (Kappashell.PopupEnvironment environment) {
             var box = new Gtk.Box (environment.orientation, 10);

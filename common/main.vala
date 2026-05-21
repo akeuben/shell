@@ -9,6 +9,7 @@ public void register_widgets() {
     register_widget("clients", InactiveClientsWidget);
     register_widget("tray", SystemTrayWidget);
     register_widget("button", ButtonWidget);
+    register_widget("region", RegionWidget);
 }
 
 private delegate void run_action(string action);
@@ -17,18 +18,16 @@ public abstract class KappashellApplication : Gtk.Application {
     public static KappashellApplication instance {private set; public get;}
     protected HashTable<Gdk.Monitor, Kappashell.BarSet> bars {protected get; private set;}
     protected Kappashell.PopupSet popups {protected get; private set;}
-    protected ErrorWindow error_window {protected get; private set;}
-
-    protected HashTable<string, Kappashell.PopupContent> popup_registry {protected get; private set;}
+    public ErrorWindow error_window {public get; private set;}
 
     protected Command cmd;
 
-    protected KappashellApplication(string application_id) {
+    protected KappashellApplication(string application_id, Command cmd) {
         KappashellApplication.instance = this;
         this.application_id = application_id;
+        this.cmd = cmd;
         flags = ApplicationFlags.HANDLES_COMMAND_LINE;
         bars = new HashTable<Gdk.Monitor, Kappashell.BarSet>(monitor_hash, monitor_equal);
-        popup_registry = new HashTable<string, Kappashell.PopupContent>(str_hash, str_equal);
     }
 
     protected abstract void setup();
@@ -50,12 +49,7 @@ public abstract class KappashellApplication : Gtk.Application {
         if(command_line.is_remote) {
             cmd.execute(new CommandLine.fromGLib(command_line));
         } else {
-            command_line.print_literal("Hello from the main instance\n");
             var monitors = Gdk.Display.get_default().get_monitors();
-
-            register_widgets();
-            setup_css();
-            setup();
 
             error_window = new ErrorWindow();
             popups = new Kappashell.PopupSet();
@@ -69,13 +63,17 @@ public abstract class KappashellApplication : Gtk.Application {
 
                 bars.set(monitor, barset);
             }
+
+            register_widgets();
+            setup_css();
+            setup();
         }
 
         return 0;
     }
 
     public void openPopup(string popup, string side) {
-        var content = Kappashell.lookup_popup(popup);
+        var content = this.popups.lookup_popup(popup);
 
         var anchor = Astal.WindowAnchor.NONE;
         if(side == "left") anchor = Astal.WindowAnchor.LEFT;

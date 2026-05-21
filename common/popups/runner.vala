@@ -1,5 +1,8 @@
 namespace Kappashell {
     public class RunnerPopup : PopupContent {
+        public static RunnerPopup create(ConfigNode config) throws PopupConfigError {
+            return new RunnerPopup();
+        }
 
         private List<PopupDataSource> sources;
 

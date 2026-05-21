@@ -1,5 +1,7 @@
 using Kappashell;
 
+private const string[] SIDES = {"left", "right", "top", "bottom"};
+
 public class KappashellDesktop : KappashellApplication { 
 
     private Config desktop_config;
@@ -8,14 +10,13 @@ public class KappashellDesktop : KappashellApplication {
     private string config_path;
 
     private KappashellDesktop() {
-        register_popup("runner", new Kappashell.RunnerPopup());
-        register_popup("power", new Kappashell.PowerPopup());
-        base("ca.kappashell.desktop");
-        base.cmd = build_commands(this);
+        base("ca.kappashell.desktop", build_command());
+
+        register_popup_type("runner", Kappashell.RunnerPopup.create);
+        register_popup_type("power", Kappashell.PowerPopup.create);
     }
 
-    private static Command build_commands(KappashellDesktop self) {
-        KappashellDesktop owned_self = self;  // forces a ref
+    private static Command build_command() {
         return new Command.Builder("Kappashell")
             .description("A custom desktop shell")
             .subcommand("debug", new Command.Builder("debug")
@@ -25,30 +26,39 @@ public class KappashellDesktop : KappashellApplication {
                 })
                 .build()
             )
-            .subcommand("popup", new Command.Builder("popup")
+            .subcommand("popup", new Command.Builder("Popup")
                 .description("Manage popup menus")
-                .subcommand("open", new Command.Builder("popup:open")
+                .subcommand("open", new Command.Builder("Open")
                     .description("Open a given popup")
-                    .argument(new EnumArgument("popup", list_to_array(Kappashell.popup_list())))
-                    .argument(new EnumArgument("side", new string[] {"left", "right", "top", "bottom"}))
+                    .argument(new StringArgument("popup"))
+                    .argument(new EnumArgument("side", SIDES))
                     .handler((ctx) => {
-                        owned_self.openPopup(ctx.get_string("popup"), ctx.get_string("side"));
+                        var popup = ctx.get_string("popup");
+                        if(!ctx.app.popups.popup_exists(popup)) {
+                            ctx.printerr("Invalid popup: %s. Valid popups: ", popup);                   
+                            foreach(var p in ctx.app.popups.popup_list()) {
+                                ctx.printerr("%s ", p);
+                            }
+                            ctx.printerr("\n");
+                            return;
+                        }
+                        ctx.app.openPopup(popup, ctx.get_string("side"));
                     })
                     .build()
                 )
-                .subcommand("close", new Command.Builder("popup:close")
+                .subcommand("close", new Command.Builder("Close")
                     .description("Close a given popup")
-                    .argument(new EnumArgument("side", new string[] {"left", "right", "top", "bottom"}))
+                    .argument(new EnumArgument("side", SIDES))
                     .handler((ctx) => {
-                        owned_self.closePopup(ctx.get_string("side"));
+                        ctx.app.closePopup(ctx.get_string("side"));
                     })
                     .build()
                 )
                 .build()
             )
             .build();
-    }
 
+    }
 
     protected override void setup() {
         config_dir = GLib.Path.build_path("/", GLib.Environment.get_user_config_dir(), "kappashell");
@@ -72,12 +82,20 @@ public class KappashellDesktop : KappashellApplication {
             error_window.add_error("Welcome to Kappashell. Edit the config file at %s to remove this message!".printf(this.config_path));
         }
 
+        var barConfig = c.get_object_member_with_default("bars", new Kappashell.ObjectConfigNode());
         try {
             foreach(var barset in bars.get_values()) {
-                barset.on_bar_config_changed(node);
+                barset.on_bar_config_changed(barConfig);
             }
         } catch (BarConfigError e) {
             error_window.add_error("Bar Config Error: %s".printf(e.message));
+        }
+
+        var popupConfig = c.get_object_member_with_default("popups", new Kappashell.ObjectConfigNode());
+        try {
+            popups.on_popup_config_changed(popupConfig);
+        } catch (PopupConfigError e) {
+            error_window.add_error("Popup Config Error: %s".printf(e.message));
         }
     }
 

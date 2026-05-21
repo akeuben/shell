@@ -21,6 +21,11 @@ namespace Kappashell {
         private print_literal stderr;
 
         private string[] args;
+
+        private Gtk.AlertDialog? dialog = null;
+        private GLib.Cancellable? cancel = null;
+        bool active = false;
+        string fullMessage = "";
         
         public CommandLine.fromGLib(GLib.ApplicationCommandLine cmdline) {
             stdout = cmdline.print_literal;
@@ -29,8 +34,35 @@ namespace Kappashell {
         }
 
         public CommandLine.fromArgs(string[] args) {
-            stdout = (msg) => GLib.print("%s\n", msg);
-            stderr = (msg) => GLib.printerr("%s\n", msg);
+            stdout = (msg) => GLib.print("%s", msg);
+            stderr = (msg) => {
+                GLib.printerr("%s", msg);
+                fullMessage += msg;
+
+                if (dialog == null) {
+                    dialog = new Gtk.AlertDialog("%s", fullMessage);
+                } else {
+                    dialog.set_message(fullMessage);
+                }
+
+                if (active) {
+                    cancel.cancel();
+                    cancel = new GLib.Cancellable();
+                } else {
+                    cancel = new GLib.Cancellable();
+                }
+
+                active = true;
+
+                dialog.choose.begin(KappashellApplication.instance.error_window, cancel, (obj, res) => {
+                    try {
+                        dialog.choose.end(res);
+                    } catch {}
+
+                    fullMessage = "";
+                    active = false;
+                });
+            };
             this.args = args;
         }
 
@@ -57,20 +89,25 @@ namespace Kappashell {
         private HashTable<string, GLib.Value?> args = new HashTable<string, GLib.Value?>(str_hash, str_equal);
         private CommandLine cmdline;
 
-        public Context(CommandLine cmdline) {
+        public KappashellApplication app {private set; public get;}
+
+        public Context(CommandLine cmdline, KappashellApplication app) {
             this.cmdline = cmdline;
+            this.app = app;
         }
 
         [PrintfFormat]
         public void print(string format, ...) {
             var args = va_list();
-            cmdline.print(format, args);
+            string message = format.vprintf(args);
+            cmdline.print(message);
         }
 
         [PrintfFormat]
         public void printerr(string format, ...) {
             var args = va_list();
-            cmdline.printerr(format, args);
+            string message = format.vprintf(args);
+            cmdline.printerr(message);
         }
 
         public void set(string arg, GLib.Value value) {
@@ -116,24 +153,25 @@ namespace Kappashell {
                 instance = new Command(name);
             }
 
-            public Builder description(string description) {
+            public unowned Builder description(string description) {
                 instance.description = description;
                 return this;
             }
 
-            public Builder subcommand(string identifier, Command command) {
+            public unowned Builder subcommand(string identifier, Command command) {
                 instance.subcommands.insert(identifier, command);
                 instance.kind = CommandType.NODE;
+                command.name = instance.name + "/" + command.name;
                 return this;
             }
 
-            public Builder argument(Argument arg) {
+            public unowned Builder argument(Argument arg) {
                 instance.args.append(arg);
                 instance.kind = CommandType.LEAF;
                 return this;
             }
 
-            public Builder handler(owned HandleCommand handler) {
+            public unowned Builder handler(owned HandleCommand handler) {
                 instance.handler = (owned) handler;
                 instance.kind = CommandType.LEAF;
                 return this;
@@ -172,7 +210,7 @@ namespace Kappashell {
         }
 
         private void execute_leaf(string[] argv, string cmd, CommandLine cmdline) throws ParseError {
-            var ctx = new Context(cmdline);
+            var ctx = new Context(cmdline, KappashellApplication.instance);
 
             if(argv.length != args.length()) {
                 throw new ParseError.INVALID_FORMAT("Incorrect Number of arguments!");
@@ -213,7 +251,7 @@ namespace Kappashell {
                 args.foreach((arg) => {
                     cmdline.printerr("%s ", arg.format());
                 });
-                cmdline.printerr("\n\n");
+                cmdline.printerr("\n");
                 args.foreach((arg) => {
                     cmdline.printerr("  %s\n", arg.details());
                     if(arg.desc != null) {
