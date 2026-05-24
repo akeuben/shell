@@ -91,7 +91,7 @@ namespace Kappashell {
             icon.pixel_size = 24;
             label = new RotatedLabel("", 90);
             var btn = new Gtk.Button();
-            btn.icon_name = "close-symbolic";
+            btn.icon_name = "window-close-symbolic";
             btn.clicked.connect(() => hyprland.focused_client.kill());
 
             hyprland.notify["focused-client"].connect(update_label);

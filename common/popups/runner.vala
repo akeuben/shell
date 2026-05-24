@@ -40,9 +40,7 @@ namespace Kappashell {
             search.width_chars = 75;
 
             search.map.connect (() => {
-                print("grab\n");
-                var res = search.grab_focus();
-                print("result: %s\n", res.to_string());
+                search.grab_focus();
             });
 
             Action next = () => {
@@ -135,8 +133,8 @@ namespace Kappashell {
             details.hexpand = true;
 
             var title = new Gtk.Label(result.title);
-            title.halign = Gtk.Align.START;
-            title.hexpand = false;
+            title.halign = Gtk.Align.FILL;
+            title.hexpand = true;
             title.max_width_chars = 30;
             title.width_chars = 30;
             title.ellipsize = Pango.EllipsizeMode.END;
@@ -145,8 +143,8 @@ namespace Kappashell {
 
             if(result.description != null && result.description.strip().length != 0) {
                 var desc = new Gtk.Label(result.description);
-                desc.halign = Gtk.Align.START;
-                desc.hexpand = false;
+                desc.halign = Gtk.Align.FILL;
+                desc.hexpand = true;
                 desc.max_width_chars = 30;
                 desc.width_chars = 30;
                 desc.ellipsize = Pango.EllipsizeMode.END;

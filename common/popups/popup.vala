@@ -15,6 +15,7 @@ namespace Kappashell {
 
     public struct PopupEnvironment {
         Gtk.Orientation orientation;
+        Gtk.Orientation meta_orientation;
         Gdk.Monitor monitor;
         Popup popup;
     }

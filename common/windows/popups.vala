@@ -112,6 +112,8 @@ namespace Kappashell {
         private PopupEnvironment environment;
 
         private Gtk.Revealer revealer;
+
+        private bool open = false;
         
         public Popup(Astal.WindowAnchor anchor) {
             this.anchor = Astal.WindowAnchor.TOP | Astal.WindowAnchor.BOTTOM | Astal.WindowAnchor.LEFT | Astal.WindowAnchor.RIGHT; 
@@ -193,16 +195,17 @@ namespace Kappashell {
                     revealer.add_css_class("open");
                     this.startCorner.set_radius_animated(15, 0.125);
                     this.endCorner.set_radius_animated(15, 0.125);
-                    this.capture_clicks();
                 } else {
                     revealer.remove_css_class("open");
                     this.startCorner.set_radius_animated(0, 0.125);
                     this.endCorner.set_radius_animated(0, 0.125);
                     this.keymode = Astal.Keymode.NONE;
-                    this.ignore_clicks();
-                    GLib.Timeout.add_once(250, () => {
-                        this.visible = false;
-                    });
+                }
+            });
+
+            revealer.notify["child-revealed"].connect(() => {
+                if (!revealer.child_revealed && !open) {
+                    this.visible = false;
                 }
             });
 
@@ -210,39 +213,18 @@ namespace Kappashell {
 
             set_child(cbox);
             present();
-            this.ignore_clicks();
-        }
-
-        private void capture_clicks() {
-            var region = new Cairo.Region.rectangle({
-                x: 0,
-                y: 0,
-                width: this.get_width(),
-                height: this.get_height(),
-            });
-
-            get_native().get_surface().set_input_region(region);
-        }
-
-        private void ignore_clicks() {
-            var region = new Cairo.Region.rectangle({
-                x: 0,
-                y: 0,
-                width: 0,
-                height: 0,
-            });
-
-            get_native().get_surface().set_input_region(region);
+            this.visible = false;
         }
 
         public void open_popup(PopupContent content) {
             this.add_css_class("dim");
+            open = true;
             if (this.revealer.child_revealed) {
                 this.revealer.reveal_child = false;
                 // we have to use add here and not add once since vala will 
                 // not think that this function is async, resulting in content from 
                 // being unref'ed and giving us a segfault.
-                GLib.Timeout.add(500, () => {
+                GLib.Timeout.add(250, () => {
                     this.revealer.set_child(content.build(environment));
                     this.revealer.reveal_child = true;
                     return GLib.Source.REMOVE;
@@ -254,6 +236,7 @@ namespace Kappashell {
         }
 
         public void close_popup() {
+            open = false;
             this.remove_css_class("dim");
             this.revealer.reveal_child = false;
         }

@@ -6,11 +6,16 @@ namespace Kappashell {
 
         public override Gtk.Widget build (Kappashell.PopupEnvironment environment) {
             var box = new Gtk.Box (environment.orientation, 10);
+            box.halign = Gtk.Align.CENTER;
+            box.valign = Gtk.Align.CENTER;
+            box.hexpand = true;
+            box.vexpand = true;
 
             box.append(create_systemctl_button("system-shutdown-symbolic", "poweroff"));
-            box.append(create_systemctl_button("system-suspend-symbolic", "sleep"));
-            box.append(create_systemctl_button("system-suspend-hibernate-symbolic", "hibernate"));
-            box.append(create_cmd_button("lock-symbolic", "echo todo"));
+            box.append(create_systemctl_button("weather-clear-night-symbolic", "sleep"));
+            box.append(create_systemctl_button("media-playback-stop-symbolic", "hibernate"));
+            box.append(create_systemctl_button("system-reboot-symbolic", "reboot"));
+            box.append(create_cmd_button("system-log-out-symbolic", "echo todo"));
 
             return box;
         }

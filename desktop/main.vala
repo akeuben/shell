@@ -14,6 +14,8 @@ public class KappashellDesktop : KappashellApplication {
 
         register_popup_type("runner", Kappashell.RunnerPopup.create);
         register_popup_type("power", Kappashell.PowerPopup.create);
+        register_popup_type("meta", Kappashell.MetaPopup.create);
+        register_popup_type("calendar", Kappashell.CalendarPopup.create);
     }
 
     private static Command build_command() {
