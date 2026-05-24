@@ -199,13 +199,13 @@ namespace Kappashell {
                     revealer.remove_css_class("open");
                     this.startCorner.set_radius_animated(0, 0.125);
                     this.endCorner.set_radius_animated(0, 0.125);
-                    this.keymode = Astal.Keymode.NONE;
                 }
             });
 
             revealer.notify["child-revealed"].connect(() => {
                 if (!revealer.child_revealed && !open) {
                     this.visible = false;
+                    this.keymode = Astal.Keymode.NONE;
                 }
             });
 
