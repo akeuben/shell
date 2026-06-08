@@ -12,10 +12,17 @@ public class KappashellDesktop : KappashellApplication {
     private KappashellDesktop() {
         base("ca.kappashell.desktop", build_command());
 
-        register_popup_type("runner", Kappashell.RunnerPopup.create);
-        register_popup_type("power", Kappashell.PowerPopup.create);
-        register_popup_type("meta", Kappashell.MetaPopup.create);
+        register_popup_type("battery", Kappashell.BatteryPopup.create);
+        register_popup_type("bluetooth", Kappashell.BluetoothPopup.create);
         register_popup_type("calendar", Kappashell.CalendarPopup.create);
+        register_popup_type("clock", Kappashell.ClockPopup.create);
+        register_popup_type("meta", Kappashell.MetaPopup.create);
+        register_popup_type("music", Kappashell.MusicPopup.create);
+        register_popup_type("phone", Kappashell.PhonePopup.create);
+        register_popup_type("power", Kappashell.PowerPopup.create);
+        register_popup_type("runner", Kappashell.RunnerPopup.create);
+        register_popup_type("wifi", Kappashell.WifiPopup.create);
+        register_popup_type("wlan", Kappashell.WlanPopup.create);
     }
 
     private static Command build_command() {
