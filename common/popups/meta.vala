@@ -60,17 +60,13 @@ namespace Kappashell {
             box.add_css_class("meta-header-%s".printf(environment.meta_orientation == Gtk.Orientation.VERTICAL ? "v" : "h"));
 
             var content = new Gtk.Stack();
-            content.vhomogeneous = false;
-            content.hhomogeneous = false;
+            content.vhomogeneous = true;
+            content.hhomogeneous = true;
             content.transition_type = environment.meta_orientation == Gtk.Orientation.HORIZONTAL ? Gtk.StackTransitionType.SLIDE_LEFT_RIGHT : Gtk.StackTransitionType.SLIDE_UP_DOWN;
 
             var switcher = new Gtk.StackSwitcher();
             switcher.orientation = environment.meta_orientation;
             switcher.stack = content;
-            switcher.halign = Gtk.Align.FILL;
-            switcher.valign = Gtk.Align.FILL;
-            switcher.hexpand = true;
-            switcher.vexpand = true;
 
             foreach(var tab in children) {
                 var popup = tab.content.build({

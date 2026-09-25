@@ -100,6 +100,7 @@ public class KappashellDesktop : KappashellApplication {
             error_window.add_error("Bar Config Error: %s".printf(e.message));
         }
 
+        print("Updating popup config!\n");
         var popupConfig = c.get_object_member_with_default("popups", new Kappashell.ObjectConfigNode());
         try {
             popups.on_popup_config_changed(popupConfig);

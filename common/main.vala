@@ -46,9 +46,7 @@ public abstract class KappashellApplication : Gtk.Application {
     }
 
     public override int command_line(ApplicationCommandLine command_line) {
-        if(command_line.is_remote) {
-            cmd.execute(new CommandLine.fromGLib(command_line));
-        } else {
+        if(!command_line.is_remote) {
             var monitors = Gdk.Display.get_default().get_monitors();
 
             register_widgets();
@@ -67,6 +65,11 @@ public abstract class KappashellApplication : Gtk.Application {
 
                 bars.set(monitor, barset);
             }
+        }
+        if(command_line.is_remote || command_line.get_arguments().length > 1) {
+            GLib.Timeout.add_once(0, () => {
+                cmd.execute(new CommandLine.fromGLib(command_line));
+            });
         }
 
         return 0;

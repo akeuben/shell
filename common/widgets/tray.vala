@@ -3,6 +3,7 @@ namespace Kappashell {
         var tray = AstalTray.get_default();
         var grid = new Gtk.Grid();
         grid.column_homogeneous = true;
+        grid.row_homogeneous = true;
 
         NotifyHandler update_tray = () => {
             int i = 0;

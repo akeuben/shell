@@ -13,26 +13,26 @@
         libyaml
     ];
 
-    
-        buildInputs = let 
-            astalDeps = with astal.packages.${system}; [
-                astal4
-                apps
-                io
-                battery
-                wireplumber 
-                network 
-                mpris 
-                powerprofiles 
-                tray 
-                bluetooth
-                hyprland
-            ];
-            deps = with pkgs; [
-                networkmanager
-                json-glib
-                libgee
-            ];
-        in 
-            astalDeps ++ deps;
+    buildInputs = let 
+        astalDeps = with astal.packages.${system}; [
+            astal4
+            apps
+            io
+            battery
+            wireplumber 
+            network 
+            mpris 
+            powerprofiles 
+            tray 
+            bluetooth
+            hyprland
+        ];
+        deps = with pkgs; [
+            libadwaita
+            networkmanager
+            json-glib
+            libgee
+        ];
+    in 
+        astalDeps ++ deps;
 }

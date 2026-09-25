@@ -6,6 +6,7 @@ sources = glob.stdout().strip().split('\n')  + [
 dependencies = [
   dependency('glib-2.0'),
   dependency('gtk4'),
+  dependency('libadwaita-1'),
   dependency('gtk4-layer-shell-0'),
   dependency('astal-4-4.0'),
   dependency('astal-apps-0.1'),
