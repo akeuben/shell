@@ -1,0 +1,24 @@
+namespace Kappashell {
+    public Gtk.Image LogoWidget(ConfigNode config, WidgetEnvironment env) throws BarConfigError {
+        var image = new Gtk.Image();
+        
+        image.icon_name = "error-app-symbolic";
+        image.pixel_size = 16;
+
+        if(env.orientation == Gtk.Orientation.VERTICAL) {
+            image.margin_top = 10;
+            image.margin_bottom = 10;
+        } else {
+            image.margin_start = 10;
+            image.margin_end = 10;
+        }
+
+        if(config.get_node_type() == ConfigNodeType.Object) {
+            var c = config.get_object();
+            image.icon_name = c.get_string_member_with_default("icon", "error-app-symbolic");
+            image.pixel_size = (int) c.get_integer_member_with_default("size", 16);
+        }
+
+        return image;
+    }
+}
