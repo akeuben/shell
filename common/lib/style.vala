@@ -30,4 +30,11 @@ namespace Kappashell {
     public void add_widget_css(Gtk.Widget widget, Gtk.StyleProvider provider) {
         add_css_provider_widget(widget, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
     }
+
+    public void add_widget_style(Gtk.Widget widget, string resource, string class) {
+        var provider = new Gtk.StyleProvider();
+        provider.load_from_resource(resource);
+        add_css_provider_widget(widget, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+        widget.add_css_class(class);
+    }
 }

@@ -1,6 +1,6 @@
 glob = run_command('find', '.', '-name', '*.vala')
 sources = glob.stdout().strip().split('\n')  + [
-  'style.c'
+  'lib/style.c'
 ]
 
 dependencies = [

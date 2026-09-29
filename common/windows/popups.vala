@@ -65,7 +65,7 @@ namespace Kappashell {
             var c = config.get_object();
 
             if(registered_popups == null)
-                registered_popups = new GLib.HashTable<string, PopupContent>((a) => a.hash(), (a, b) => a == b);
+                registered_popups = new GLib.HashTable<string, PopupContent>((a) => a.hash(), (a, b) => a == b, null, (o) => o.dispose());
 
             registered_popups.remove_all();
 
