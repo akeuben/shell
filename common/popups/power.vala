@@ -22,7 +22,7 @@ namespace Kappashell {
 
         private static Gtk.Button create_systemctl_button(string icon, string cmd) {
             var btn = new Gtk.Button.from_icon_name(icon);
-            ((Gtk.Image) btn.child).pixel_size = 24;
+            ((Gtk.Image) btn.child).pixel_size = 28;
             btn.clicked.connect(() => systemctl(cmd));
             btn.tooltip_text = cmd;
 
@@ -31,7 +31,7 @@ namespace Kappashell {
 
         private static Gtk.Button create_cmd_button(string icon, string cmd) {
             var btn = new Gtk.Button.from_icon_name(icon);
-            ((Gtk.Image) btn.child).pixel_size = 24;
+            ((Gtk.Image) btn.child).pixel_size = 28;
             btn.clicked.connect(() => {
                 try {
                     GLib.Process.spawn_command_line_async(cmd);

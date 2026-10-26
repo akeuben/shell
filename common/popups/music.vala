@@ -1,13 +1,16 @@
 namespace Kappashell {
     public class MusicPopup : PopupContent {
 
-        private static AstalMpris.Mpris mpris = AstalMpris.get_default();
+        private static AstalMpris.Mpris mpris = null;
 
         public static MusicPopup create(ConfigNode config) throws PopupConfigError {
             return new MusicPopup();
         }
 
         public override Gtk.Widget build (Kappashell.PopupEnvironment environment) {
+            if (mpris == null) {
+                mpris = AstalMpris.get_default();
+            }
             var box = new Gtk.Box(environment.orientation, 10);
             box.add_css_class("inset");
 
@@ -26,11 +29,23 @@ namespace Kappashell {
                 carousel.append(createPlayer(player, environment));
             });
 
+            mpris.player_closed.connect((player) => {
+                Gtk.Widget current = carousel.get_first_child();
+                while(current != null) {
+                    if(current.get_data<AstalMpris.Player>("player").bus_name == player.bus_name) {
+                        carousel.remove(current);
+                        break;
+                    }
+                    current = current.get_next_sibling();
+                }
+            });
+
             return box;
         }
 
         public Gtk.Widget createPlayer(AstalMpris.Player player, Kappashell.PopupEnvironment environment) {
             var overlay = new Gtk.Overlay();
+            overlay.set_data<AstalMpris.Player>("player", player);
             overlay.hexpand = true;
             overlay.vexpand = true;
             overlay.set_child(new PlaybackBackgroundWidget(player));
