@@ -1,6 +1,8 @@
 namespace Kappashell {
     public class Config {
 
+        public ConfigNode current_config {public get; private set;}
+
         public signal void config_changed(ConfigNode node);
         public signal void config_error(GLib.Error error);
 
@@ -62,6 +64,7 @@ namespace Kappashell {
                 var ast = ConfigNode.fromYaml(document, *root);
 
                 this.config_changed(ast);
+                this.current_config = ast;
             }
         }
     }

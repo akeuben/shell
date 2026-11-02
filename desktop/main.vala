@@ -79,6 +79,16 @@ public class KappashellDesktop : KappashellApplication {
             error_window.add_error(error.message);
         });
 
+        this.monitor_connected.connect((monitor, bar) => {
+            var current = this.desktop_config.current_config;
+            if (current == null) return;
+            try {
+                bar.on_bar_config_changed(current.get_object().get_object_member_with_default("bars", new Kappashell.ObjectConfigNode()));
+            } catch(BarConfigError e) {
+                error_window.add_error("Bar Config Error: %s".printf(e.message));
+            }
+        });
+
         add_user_override_css(GLib.Path.build_path("/", config_dir, "style.css"));
     }
 

@@ -19,6 +19,10 @@ public abstract class KappashellApplication : Gtk.Application {
     protected HashTable<Gdk.Monitor, Kappashell.BarSet> bars {protected get; private set;}
     protected Kappashell.PopupSet popups {protected get; private set;}
     public ErrorWindow error_window {public get; private set;}
+    private ListModel monitor_list;
+
+    public signal void monitor_connected(Gdk.Monitor monitor, Kappashell.BarSet bar_set);
+    public signal void monitor_disconnected(Gdk.Monitor monitor, Kappashell.BarSet bar_set);
 
     protected Command cmd;
 
@@ -27,7 +31,7 @@ public abstract class KappashellApplication : Gtk.Application {
         this.application_id = application_id;
         this.cmd = cmd;
         flags = ApplicationFlags.HANDLES_COMMAND_LINE;
-        bars = new HashTable<Gdk.Monitor, Kappashell.BarSet>(monitor_hash, monitor_equal);
+        bars = new HashTable<Gdk.Monitor, Kappashell.BarSet>(direct_hash, direct_equal);
     }
 
     protected abstract void setup();
@@ -47,7 +51,7 @@ public abstract class KappashellApplication : Gtk.Application {
 
     public override int command_line(ApplicationCommandLine command_line) {
         if(!command_line.is_remote) {
-            var monitors = Gdk.Display.get_default().get_monitors();
+            this.monitor_list = Gdk.Display.get_default().get_monitors();
 
             register_widgets();
             setup_css();
@@ -56,15 +60,10 @@ public abstract class KappashellApplication : Gtk.Application {
             error_window = new ErrorWindow();
             popups = new Kappashell.PopupSet();
 
-            for(var i = 0; i < monitors.get_n_items (); i++) {
-                var monitor = (Gdk.Monitor) monitors.get_item(i);
-
-                var barset = new Kappashell.BarSet(monitor);
-
-                barset.add_windows(this);
-
-                bars.set(monitor, barset);
-            }
+            sync_monitors();
+            this.monitor_list.items_changed.connect((pos, removed, added) => {
+                sync_monitors();
+            });
         }
         if(command_line.is_remote || command_line.get_arguments().length > 1) {
             GLib.Timeout.add_once(0, () => {
@@ -108,12 +107,39 @@ public abstract class KappashellApplication : Gtk.Application {
 
         popups.close_popup(anchor);
     }
-}
 
-uint monitor_hash(Gdk.Monitor monitor) {
-    return monitor.connector.hash();
-}
+    private void sync_monitors() {
+        var current = new GenericArray<Gdk.Monitor>();
+        for(uint i = 0; i < monitor_list.get_n_items(); i++) {
+            current.add((Gdk.Monitor) monitor_list.get_item(i));
+        }
 
-bool monitor_equal(Gdk.Monitor a, Gdk.Monitor b) {
-    return a.connector == b.connector;
+        var stale = new GenericArray<Gdk.Monitor>();
+        bars.foreach((monitor, bar) => {
+            bool found = false;
+            for(int i = 0; i < current.length; i++) {
+                if(current[i] == monitor) { found = true; break; } 
+            }
+            if(!found) stale.add(monitor);
+        });
+
+        for(int i = 0; i < stale.length; i++) {
+            var bar = bars.lookup(stale[i]);
+            monitor_disconnected(stale[i], bar);
+            bar.close();
+            bars.remove(stale[i]);
+        }
+
+        // Add bars for new monitors
+        for(int i = 0; i < current.length; i++) {
+            var monitor = current[i];
+            if(bars.contains(monitor)) continue;
+
+            var barset = new Kappashell.BarSet(monitor);
+            barset.add_windows(this);
+            bars.set(monitor, barset);
+            monitor_connected(monitor, barset);
+        }
+
+    }
 }

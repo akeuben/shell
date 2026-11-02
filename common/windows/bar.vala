@@ -53,6 +53,14 @@ namespace Kappashell {
             }
         }
 
+        public void close() {
+            top.close();
+            left.close();
+            bottom.close();
+            right.close();
+            overlay.close();
+        }
+
         public void dim() {
             overlay.add_css_class("dim");
             print("DIMMING!");

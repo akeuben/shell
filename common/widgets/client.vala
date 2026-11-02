@@ -10,38 +10,95 @@ namespace Kappashell {
 
     class HyprlandInactiveClientsWidget : Gtk.Box {
         AstalHyprland.Hyprland hyprland;
-        AstalHyprland.Monitor monitor;
+        AstalHyprland.Monitor? monitor = null;
+        Gdk.Monitor gdk_monitor;
+
+        ulong clients_id = 0;
+        ulong focused_id = 0;
+        ulong monitor_added_id = 0;
+        ulong active_workspace_id = 0;
 
         public HyprlandInactiveClientsWidget(ConfigNode config, WidgetEnvironment env) {
-            this.hyprland = AstalHyprland.get_default();
-            this.monitor = hyprland.get_monitor_by_name(env.monitor.get_connector());
-            this.orientation = env.orientation;
-            this.spacing = 10;
+            orientation = env.orientation;
+            spacing = 10;
 
-            hyprland.notify["clients"].connect(update_list);
-            hyprland.notify["focused-client"].connect(update_list);
-            monitor.notify["active-workspace"].connect(update_list);
+            hyprland = AstalHyprland.get_default();
+            gdk_monitor = env.monitor;
 
-            destroy.connect(() => {
-                hyprland.notify.disconnect(update_list);
-                monitor.notify.disconnect(update_list);
-            });
+            // Method handlers (not lambdas): weak ref to `this`
+            clients_id = hyprland.notify["clients"].connect(on_changed);
+            focused_id = hyprland.notify["focused-client"].connect(on_changed);
+            monitor_added_id = hyprland.monitor_added.connect(on_monitor_added);
 
+            try_attach_monitor();
+        }
+
+        public override void dispose() {
+            if (clients_id != 0) {
+                SignalHandler.disconnect(hyprland, clients_id);
+                clients_id = 0;
+            }
+            if (focused_id != 0) {
+                SignalHandler.disconnect(hyprland, focused_id);
+                focused_id = 0;
+            }
+            if (monitor_added_id != 0) {
+                SignalHandler.disconnect(hyprland, monitor_added_id);
+                monitor_added_id = 0;
+            }
+            if (monitor != null && active_workspace_id != 0) {
+                SignalHandler.disconnect(monitor, active_workspace_id);
+            }
+            active_workspace_id = 0;
+            monitor = null;
+
+            clear_children();
+            base.dispose();
+        }
+
+        void on_changed() {
             update_list();
         }
 
-        void update_list() {
-            var child = this.get_first_child();
-            while(child != null) {
-                remove(child);
-                child = this.get_first_child();
-            }
+        void on_monitor_added() {
+            try_attach_monitor();
+        }
 
-            foreach(var client in hyprland.clients) {
-                if(monitor.active_workspace.clients.find_custom(client, compare_hypr_clients) == null)
+        void try_attach_monitor() {
+            if (monitor != null) return;
+
+            var connector = gdk_monitor.get_connector();
+            if (connector == null) return;          // GDK not ready; monitor_added will retry
+
+            monitor = hyprland.get_monitor_by_name(connector);
+            if (monitor == null) return;            // Hyprland hasn't announced it yet
+
+            active_workspace_id = monitor.notify["active-workspace"].connect(on_changed);
+            update_list();
+        }
+
+        void clear_children() {
+            var child = get_first_child();
+            while (child != null) {
+                remove(child);
+                child = get_first_child();
+            }
+        }
+
+        void update_list() {
+            clear_children();
+            if (monitor == null) return;
+
+            var workspace = monitor.active_workspace;
+            if (workspace == null) return;
+
+            var focused = hyprland.focused_client;
+
+            foreach (var client in hyprland.clients) {
+                if (workspace.clients.find_custom(client, compare_hypr_clients) == null)
                     continue;
 
-                if(hyprland.focused_client != null && compare_hypr_clients(client, hyprland.focused_client) == 0)
+                if (focused != null && compare_hypr_clients(client, focused) == 0)
                     continue;
 
                 var btn = new Gtk.Button.from_icon_name(get_icon_name_for_hypr_client(client));
@@ -56,30 +113,15 @@ namespace Kappashell {
     }
 
     int compare_hypr_clients(AstalHyprland.Client a, AstalHyprland.Client b) {
-        if(a == null && b == null) {
-            return 0;
-        }
-        if(a == null || b == null) {
-            return 1;
-        }
-        if(a.pid != b.pid) {
-            return 1;
-        }
-
-        if(a.title != b.title) {
-            return 1;
-        }
-
-        return 0;
+        return (a.address == b.address) ? 0 : 1;
     }
 
-
     class HyprlandClientWidget : Gtk.Box {
-
         AstalHyprland.Hyprland hyprland;
         RotatedLabel label;
         Gtk.Image icon;
-        
+        ulong focused_id = 0;
+
         public HyprlandClientWidget(ConfigNode config, WidgetEnvironment env) {
             this.hyprland = AstalHyprland.get_default();
             this.orientation = env.orientation;
@@ -90,15 +132,12 @@ namespace Kappashell {
             icon = new Gtk.Image();
             icon.pixel_size = 24;
             label = new RotatedLabel("", 90);
+
             var btn = new Gtk.Button();
             btn.icon_name = "window-close-symbolic";
-            btn.clicked.connect(() => hyprland.focused_client.kill());
+            btn.clicked.connect(on_kill_clicked);   // named method, not a lambda
 
-            hyprland.notify["focused-client"].connect(update_label);
-
-            destroy.connect(() => {
-                hyprland.notify.disconnect(update_label);
-            });
+            focused_id = hyprland.notify["focused-client"].connect(update_label);
 
             update_label();
 
@@ -107,22 +146,36 @@ namespace Kappashell {
             append(btn);
         }
 
+        public override void dispose() {
+            if (focused_id != 0) {
+                SignalHandler.disconnect(hyprland, focused_id);
+                focused_id = 0;
+            }
+            base.dispose();   // GtkBox unparents its children
+        }
+
+        void on_kill_clicked() {
+            var client = hyprland.focused_client;
+            if (client != null) client.kill();
+        }
+
         void update_label() {
-            if(hyprland.focused_client == null) {
+            var client = hyprland.focused_client;
+            if (client == null) {
                 label.label = "";
                 visible = false;
                 return;
             }
 
-            label.label = hyprland.focused_client.title;
-            visible = true;
-            if(label.label.length > 25) {
-                label.label = "%s...".printf(label.label.substring(0, 25));
+            var title = client.title ?? "";
+            if (title.char_count() > 25) {
+                title = title.substring(0, title.index_of_nth_char(25)) + "...";
             }
 
-            icon.set_from_icon_name(get_icon_name_for_hypr_client(hyprland.focused_client));
+            label.label = title;
+            visible = true;
+            icon.set_from_icon_name(get_icon_name_for_hypr_client(client));
         }
-
     }
 
     string get_icon_name_for_hypr_client(AstalHyprland.Client client) {
