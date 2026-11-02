@@ -26,6 +26,9 @@ namespace Kappashell {
             }
 
             mpris.player_added.connect((player) => {
+                if(carousel.get_n_pages() == 1) {
+                    carousel.remove(carousel.get_first_child());
+                }
                 carousel.append(createPlayer(player, environment));
             });
 
@@ -37,6 +40,9 @@ namespace Kappashell {
                         break;
                     }
                     current = current.get_next_sibling();
+                }
+                if(carousel.get_n_pages() == 0) {
+                    carousel.append(new Gtk.Label("No active audio players."));
                 }
             });
 
