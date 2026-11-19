@@ -1,5 +1,6 @@
-{pkgs, desktop, ...}: pkgs.mkShell {
+{pkgs, desktop, greeter, ...}: pkgs.mkShell {
     inputsFrom = [
         desktop
+        greeter
     ];
 }

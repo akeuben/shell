@@ -11,13 +11,20 @@
         system = "x86_64-linux";
         pkgs = nixpkgs.legacyPackages.${system};
     in {
-        packages.${system}.kappashell-desktop = import ./desktop.nix {
-            inherit pkgs astal system;
+        packages.${system} = {
+            kappashell-desktop = import ./desktop.nix {
+                inherit pkgs astal system;
+            };
+
+            kappashell-greeter = import ./greeter.nix {
+                inherit pkgs astal system;
+            };
         };
 
         devShells.${system}.default = import ./shell.nix {
             inherit pkgs astal system;
             desktop = self.packages.${system}.kappashell-desktop;
+            greeter = self.packages.${system}.kappashell-greeter;
         };
     };
 }

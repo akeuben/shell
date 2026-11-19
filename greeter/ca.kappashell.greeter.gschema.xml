@@ -1,0 +1,8 @@
+<schemalist>
+    <schema id="ca.kappashell.greeter" path="/ca/kappashell/greeter/">
+        <key name="last-user" type="s">
+            <default>''</default>
+            <summary>Last selected user</summary>
+        </key>
+    </schema>
+</schemalist>

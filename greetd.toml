@@ -1,0 +1,6 @@
+[terminal]
+vt = 8
+
+[default_session]
+command = "/run/current-system/sw/bin/sleep infinity"
+user = "greeter"

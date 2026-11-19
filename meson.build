@@ -7,4 +7,4 @@ add_project_arguments('-w', language: 'c')
 
 subdir('common')
 subdir('desktop')
-# subdir('greeter')
+subdir('greeter')

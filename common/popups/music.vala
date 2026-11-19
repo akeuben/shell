@@ -13,6 +13,7 @@ namespace Kappashell {
             }
             var box = new Gtk.Box(environment.orientation, 10);
             box.add_css_class("inset");
+            box.add_css_class("music");
 
             var carousel = new Adw.Carousel();
             box.append(carousel);

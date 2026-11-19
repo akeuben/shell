@@ -6,10 +6,13 @@
 
 * {
     border: none;
+    font-family: mono;
 }
-popovermenu slider {
-    min-width: 0px;
-    min-height: 0px;
+switch slider,
+scrollbar slider {
+    min-width: 16px;
+    min-height: 16px;
+    margin: 0px;
 }
 
 entry {
@@ -19,6 +22,11 @@ entry {
 
 .debug {
     background: red;
+}
+
+.music {
+    min-height: 200px;
+    min-width: 500px;
 }
 
 .widget-v {
@@ -177,4 +185,54 @@ button:hover {
     background: @base-color;
     border-radius: 20px;
     box-shadow: inset -2px -2px 10px shade(@base-color, 0.5);
+}
+
+.greeter {
+    background: transparent;
+}
+
+.greeter-box {
+    background: @base-color;
+    border-radius: 30px;
+}
+
+.welcome {
+    font-size: 1.5em;
+}
+
+.hostname {
+    font-size: 2em;
+    color: @accent_color;
+    font-weight: 900;
+}
+
+.quote {
+    font-size: 1.25em;
+}
+
+.quote-mark {
+    font-size: 2em;
+    color: @accent-color;
+    font-weight: 900;
+}
+
+separator {
+    background: shade(@base-color, 1.5);
+    min-height: 2px;
+}
+
+.bg {
+    background: @base-color;
+}
+
+.login-card {
+    background: shade(@base-color, 1.25);
+    border: 2px solid shade(@base-color, 1.5);
+    border-radius: 10px;
+    transition: background 0.15s linear, border 0.15s linear;
+}
+
+.login-card.selected {
+    background: shade(@accent-color, 0.5);
+    border: 2px solid @accent-color;
 }

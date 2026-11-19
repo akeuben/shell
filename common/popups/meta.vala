@@ -60,8 +60,9 @@ namespace Kappashell {
             box.add_css_class("meta-header-%s".printf(environment.meta_orientation == Gtk.Orientation.VERTICAL ? "v" : "h"));
 
             var content = new Gtk.Stack();
-            content.vhomogeneous = true;
-            content.hhomogeneous = true;
+            content.vhomogeneous = environment.orientation == Gtk.Orientation.VERTICAL;
+            content.hhomogeneous = environment.orientation == Gtk.Orientation.HORIZONTAL;
+            content.interpolate_size = true;
             content.transition_type = environment.meta_orientation == Gtk.Orientation.HORIZONTAL ? Gtk.StackTransitionType.SLIDE_LEFT_RIGHT : Gtk.StackTransitionType.SLIDE_UP_DOWN;
 
             var switcher = new Gtk.StackSwitcher();

@@ -27,6 +27,7 @@ public abstract class KappashellApplication : Gtk.Application {
     protected Command cmd;
 
     protected KappashellApplication(string application_id, Command cmd) {
+        GLib.Log.set_always_fatal(GLib.LogLevelFlags.LEVEL_CRITICAL);
         KappashellApplication.instance = this;
         this.application_id = application_id;
         this.cmd = cmd;

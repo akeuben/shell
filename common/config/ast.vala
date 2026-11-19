@@ -105,13 +105,13 @@ namespace Kappashell {
 
         construct {
             kind = ConfigNodeType.Object;
+            mappings = new HashTable<string, ConfigNode>(str_hash, str_equal);
         }
 
         public HashTable<string, ConfigNode> mappings {get; private set;}
 
         public ObjectConfigNode.yaml(Yaml.Document document, Yaml.Node node) {
             assert_true(node.type == Yaml.NodeType.MAPPING);
-            mappings = new HashTable<string, ConfigNode>(str_hash, str_equal);
 
             Yaml.NodePair* pair = (Yaml.NodePair*) node.data_mapping_pairs_start;
             Yaml.NodePair* top  = (Yaml.NodePair*) node.data_mapping_pairs_top;
