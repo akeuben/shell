@@ -19,6 +19,7 @@
             apps
             io
             battery
+            greet
             wireplumber 
             network 
             mpris 
