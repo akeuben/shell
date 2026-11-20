@@ -17,4 +17,9 @@ import('gnome').compile_schemas(
   build_by_default: true
 )
 
+install_data(
+    'ca.kappashell.greeter.gschema.xml',
+    install_dir: get_option('datadir') / 'glib-2.0' / 'schemas'
+)
+
 executable('kappashell-greeter', [sources, resource], dependencies: dependencies, vala_args: ['--pkg', 'passwd-1.0'], install: true)

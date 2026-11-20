@@ -1,6 +1,9 @@
-{pkgs, astal, system}: pkgs.stdenv.mkDerivation { 
+{pkgs, astal, system}: let 
     pname = "kappashell-greeter";
     version = "0.1.0";
+in pkgs.stdenv.mkDerivation { 
+    inherit pname version;
+
     src = ./.;
 
     nativeBuildInputs = with pkgs; [
@@ -11,6 +14,7 @@
         gobject-introspection
         cmake
         libyaml
+        wrapGAppsHook4
     ];
 
     buildInputs = let 
@@ -36,4 +40,9 @@
         ];
     in 
         astalDeps ++ deps;
+        
+    preFixup = ''
+        glib-compile-schemas --strict \
+            "$out/share/gsettings-schemas/${pname}-${version}/glib-2.0/schemas"
+    '';
 }
