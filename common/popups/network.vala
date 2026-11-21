@@ -178,8 +178,7 @@ namespace Kappashell {
                 scan_stack = new Gtk.Stack();
                 var scan_btn = new Gtk.Button.from_icon_name("view-refresh-symbolic");
                 scan_btn.clicked.connect(() => wifi.scan());
-                var spinner = new Gtk.Spinner();
-                spinner.spinning = true;
+                var spinner = new Adw.Spinner();
                 spinner.set_size_request(16, 16);
                 scan_stack.add_named(scan_btn, "idle");
                 scan_stack.add_named(spinner, "scanning");
@@ -320,7 +319,7 @@ namespace Kappashell {
         Gtk.Label status_label;
         Gtk.Stack action_stack;
         Gtk.Button disconnect_btn;
-        Gtk.Spinner spinner;
+        Adw.Spinner spinner;
 
         // Password prompt
         Gtk.Image pw_icon;
@@ -378,8 +377,7 @@ namespace Kappashell {
                     }
                 });
             });
-            spinner = new Gtk.Spinner();
-            spinner.spinning = true;
+            spinner = new Adw.Spinner();
             spinner.set_size_request(32, 32);
             action_stack.add_named(disconnect_btn, "disconnect");
             action_stack.add_named(spinner, "busy");

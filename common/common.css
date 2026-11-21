@@ -236,3 +236,7 @@ separator {
     background: shade(@accent-color, 0.5);
     border: 2px solid @accent-color;
 }
+
+.spinner {
+    color: @accent-color;
+}

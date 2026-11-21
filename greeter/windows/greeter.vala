@@ -371,14 +371,14 @@ public class LoginLoadingTab : LoginTab {
 
         vexpand = true;
 
-        var spinner = new Gtk.Spinner();
+        var spinner = new Adw.Spinner();
         spinner.halign = Gtk.Align.CENTER;
         spinner.valign = Gtk.Align.CENTER;
         spinner.vexpand = true;
+        spinner.width_request = 32;
+        spinner.height_request = 32;
 
         append(spinner);
-
-        spinner.start();
     }
 
     public override void onVisible() {
