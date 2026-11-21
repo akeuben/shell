@@ -96,7 +96,7 @@ public class LoginPane : Astal.Bin {
     public LoginPane() {
         var content = new Gtk.Box(Gtk.Orientation.VERTICAL, 10);
 
-        content.margin_top = 30;
+        content.margin_top = 20;
         content.margin_bottom = 30;
         content.margin_start = 30;
         content.margin_end = 30;
@@ -117,12 +117,14 @@ public class LoginPane : Astal.Bin {
         var main = new LoginMainTab();
         main.selector.other_selected.connect(() => tabs.set_visible_child_name("username"));
         main.selector.user_selected.connect((_, user) => {
+            KappashellGreeter.updateCurrentWallpaper(user.username);
             greeter.create_session(user.username);
             tabs.set_visible_child_name("loading");
         });
 
         var username = new LoginUsernameTab();
         username.username_entered.connect((_, username) => {
+            KappashellGreeter.updateCurrentWallpaper(username);
             greeter.create_session(username);
             tabs.set_visible_child_name("loading");
         });
@@ -152,10 +154,15 @@ public class LoginPane : Astal.Bin {
         });
 
         greeter.error_message.connect((message) => {
+            tabs.transition_type = Gtk.StackTransitionType.SLIDE_RIGHT;
+            tabs.set_visible_child_name("main");
+            tabs.transition_type = Gtk.StackTransitionType.SLIDE_LEFT;
         });
 
         greeter.cancelled.connect((error) => {
+            tabs.transition_type = Gtk.StackTransitionType.SLIDE_RIGHT;
             tabs.set_visible_child_name("main");
+            tabs.transition_type = Gtk.StackTransitionType.SLIDE_LEFT;
         });
 
         greeter.authenticated.connect(() => {
@@ -167,7 +174,9 @@ public class LoginPane : Astal.Bin {
                     GLib.Process.exit(0);
                 });
             } catch(Error e) {
+                tabs.transition_type = Gtk.StackTransitionType.SLIDE_RIGHT;
                 tabs.set_visible_child_name("main");
+                tabs.transition_type = Gtk.StackTransitionType.SLIDE_LEFT;
             }
         });
 
@@ -177,11 +186,12 @@ public class LoginPane : Astal.Bin {
         tabs.add_named(secretTab, "secret");
         tabs.add_named(new LoginLoadingTab(), "loading");
         tabs.set_visible_child_name("main");
+        tabs.transition_type = Gtk.StackTransitionType.SLIDE_LEFT;
         tabs.hhomogeneous = true;
         tabs.vhomogeneous = true;
 
         content.append(tabs);
-
+        content.append(new Gtk.Separator(Gtk.Orientation.HORIZONTAL));
         content.append(sessionDropdown);
 
         child = content;
@@ -196,6 +206,7 @@ public abstract class LoginTab : Gtk.Box {
         var header = new Gtk.Overlay();
         var sep = new Gtk.Separator(Gtk.Orientation.HORIZONTAL);
         header.child = sep;
+        header.margin_top = 10;
         var labelBox = new Gtk.Box(Gtk.Orientation.VERTICAL, 0);
         labelBox.add_css_class("bg");
 
@@ -235,6 +246,7 @@ public class LoginMainTab : LoginTab {
     public override void onVisible() {
         selector.autoSelect();
         password.text = "";
+        KappashellGreeter.updateCurrentWallpaper(null);
     }
 }
 
@@ -248,13 +260,19 @@ public class LoginUsernameTab : LoginTab {
 
         entry = new Gtk.Entry();
         entry.placeholder_text = "Username";
-        entry.activate.connect(() => username_entered(entry.text));
+        entry.activate.connect(() => {
+            username_entered(entry.text);
+        });
+        entry.valign = Gtk.Align.CENTER;
+        entry.vexpand = true;
 
         append(entry);
     }
 
     public override void onVisible() {
         entry.text = "";
+        entry.grab_focus();
+        KappashellGreeter.updateCurrentWallpaper(null);
     }
 }
 
@@ -267,6 +285,8 @@ public class LoginVisibleTab : LoginTab {
         base("Enter login");
 
         entry = new Gtk.Entry();
+        entry.valign = Gtk.Align.CENTER;
+        entry.vexpand = true;
 
         entry.activate.connect(() => {
             value_entered(entry.text);
@@ -282,6 +302,7 @@ public class LoginVisibleTab : LoginTab {
 
     public override void onVisible() {
         entry.text = "";
+        entry.grab_focus();
     }
 }
 
@@ -294,6 +315,8 @@ public class LoginSecretTab : LoginTab {
         base("Enter login");
 
         entry = new Gtk.PasswordEntry();
+        entry.valign = Gtk.Align.CENTER;
+        entry.vexpand = true;
 
         entry.activate.connect(() => {
             value_entered(entry.text);
@@ -309,6 +332,7 @@ public class LoginSecretTab : LoginTab {
 
     public override void onVisible() {
         entry.text = "";
+        entry.grab_focus();
     }
 }
 
@@ -321,7 +345,7 @@ public class LoginLoadingTab : LoginTab {
         var spinner = new Gtk.Spinner();
         spinner.halign = Gtk.Align.CENTER;
         spinner.valign = Gtk.Align.CENTER;
-        spinner.vexpand = false;
+        spinner.vexpand = true;
 
         append(spinner);
 
@@ -344,6 +368,8 @@ public class LoginSelector : Gtk.Box {
     private Gtk.Box content;
     
     public LoginSelector() {
+        valign = Gtk.Align.CENTER;
+        vexpand = true;
         var scroller = new Gtk.ScrolledWindow();
         content = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 10);
 

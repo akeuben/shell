@@ -9,8 +9,14 @@ public class KappashellGreeter : KappashellApplication {
     private string config_dir;
     private string config_path;
 
+    private HashTable<Gdk.Monitor, Background> backgrounds;
+    private WallpaperConfig wallpaper_config;
+
     private KappashellGreeter() {
         base("ca.kappashell.greeter", build_command());
+
+        backgrounds = new HashTable<Gdk.Monitor, Background>(direct_hash, direct_equal);
+        wallpaper_config = new WallpaperConfig();
 
         register_popup_type("battery", Kappashell.BatteryPopup.create);
         register_popup_type("clock", Kappashell.ClockPopup.create);
@@ -61,7 +67,6 @@ public class KappashellGreeter : KappashellApplication {
                 .build()
             )
             .build();
-
     }
 
     protected override void setup() {
@@ -74,14 +79,32 @@ public class KappashellGreeter : KappashellApplication {
             error_window.add_error(error.message);
         });
 
+        var monitors = Gdk.Display.get_default().get_monitors();
+        for(uint i = 0; i < monitors.get_n_items(); i++) {
+            var monitor = (Gdk.Monitor) monitors.get_item(i);
+            var background = new Background(this, this.wallpaper_config, monitor);
+            backgrounds.set(monitor, background);
+            this.add_window(background);
+        }
+
         this.monitor_connected.connect((monitor, bar) => {
             var current = this.greeter_config.current_config;
             if (current == null) return;
             try {
                 bar.on_bar_config_changed(current.get_object().get_object_member_with_default("bars", new Kappashell.ObjectConfigNode()));
+
+                var background = new Background(this, this.wallpaper_config, monitor);
+                backgrounds.set(monitor, background);
+                this.add_window(background);
             } catch(BarConfigError e) {
                 error_window.add_error("Bar Config Error: %s".printf(e.message));
             }
+
+        });
+
+        this.monitor_disconnected.connect((monitor) => {
+            backgrounds.get(monitor).close();
+            backgrounds.remove(monitor);
         });
 
         this.add_window(new Greeter());
@@ -114,6 +137,13 @@ public class KappashellGreeter : KappashellApplication {
         } catch (PopupConfigError e) {
             error_window.add_error("Popup Config Error: %s".printf(e.message));
         }
+    }
+
+    public static void updateCurrentWallpaper(string? username) {
+        var instance = (KappashellGreeter) KappashellApplication.instance;
+        instance.backgrounds.for_each((monitor, background) => {
+            background.show_user(username);
+        });
     }
 
     public static int main(string[] args) {

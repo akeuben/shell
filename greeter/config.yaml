@@ -19,3 +19,13 @@ bars:
       - type: "clock"
         config:
           24hour: true
+      - type: "button"
+        config:
+          action_type: "action"
+          icon: "system-shutdown-symbolic"
+          size: 24
+          action: "popup open power bottom"
+
+popups:
+  power:
+    type: "power"

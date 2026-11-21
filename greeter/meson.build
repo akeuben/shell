@@ -1,4 +1,4 @@
-sources = files('main.vala', 'windows/greeter.vala')
+sources = files('main.vala', 'windows/greeter.vala', 'windows/wallpaper.vala')
 
 dependencies = [
   common,
