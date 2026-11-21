@@ -336,6 +336,35 @@ public class LoginSecretTab : LoginTab {
     }
 }
 
+public static void dump_properties(GLib.Object object) {
+    var properties = object.get_class().list_properties();
+
+    foreach (var property in properties) {
+        var value = GLib.Value(property.value_type);
+        object.get_property(property.name, ref value);
+
+        stdout.printf(
+            "%s (%s): %s\n",
+            property.name,
+            property.value_type.name(),
+            value.strdup_contents()
+        );
+    }
+}
+
+public static void dump_css(Gtk.Widget widget) {
+    stdout.printf("Widget: %s\n", widget.get_type().name());
+
+    stdout.printf("CSS name: %s\n", widget.get_css_name());
+
+    stdout.printf("CSS classes:\n");
+    foreach (var css_class in widget.get_css_classes()) {
+        stdout.printf("  .%s\n", css_class);
+    }
+
+    stdout.printf("State flags: %s\n", widget.get_state_flags().to_string());
+}
+
 public class LoginLoadingTab : LoginTab {
     public LoginLoadingTab() {
         base("Please wait...");

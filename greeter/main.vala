@@ -71,6 +71,16 @@ public class KappashellGreeter : KappashellApplication {
 
     protected override void setup() {
         add_bundled_css("/styles/colors.css", Gtk.STYLE_PROVIDER_PRIORITY_SETTINGS);
+        Gtk.IconTheme.get_for_display(
+            Gdk.Display.get_default()
+        ).add_resource_path(
+            "/icons"
+        );
+
+        var settings = Gtk.Settings.get_default ();
+        settings.gtk_icon_theme_name = "Adwaita";
+        settings.gtk_enable_animations = true;
+
         config_dir = "/etc/kappashell";
         config_path = GLib.Path.build_path("/", config_dir, "config.yaml");
         greeter_config = new Config(config_path, "/config/config.yaml");

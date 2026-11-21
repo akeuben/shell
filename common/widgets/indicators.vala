@@ -1,7 +1,7 @@
 namespace Kappashell {
     const string BT_ICON_DISCONNECTED = "bluetooth-disconnected-symbolic";
     const string BT_ICON_CONNECTED = "bluetooth-active-symbolic";
-    const string NW_ICON_UNKNOWN = "bluetooth-acquiring-symbolic";
+    const string NW_ICON_UNKNOWN = "bluetooth-paired-symbolic";
 
     delegate void NotifyHandler();
 

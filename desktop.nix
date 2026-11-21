@@ -11,6 +11,7 @@
         gobject-introspection
         cmake
         libyaml
+        wrapGAppsHook4
     ];
 
     buildInputs = let 
@@ -33,6 +34,8 @@
             networkmanager
             json-glib
             libgee
+            adwaita-icon-theme
+            librsvg
         ];
     in 
         astalDeps ++ deps;

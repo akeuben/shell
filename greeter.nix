@@ -37,6 +37,8 @@ in pkgs.stdenv.mkDerivation {
             networkmanager
             json-glib
             libgee
+            adwaita-icon-theme
+            librsvg
         ];
     in 
         astalDeps ++ deps;

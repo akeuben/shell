@@ -6,4 +6,17 @@
     <gresource prefix="/styles">
         <file>colors.css</file>
     </gresource>
+    <gresource prefix="/icons">
+        <file alias="bluetooth-active-symbolic.svg">icons/scalable/bluetooth-active-symbolic.svg</file>
+        <file alias="bluetooth-paired-symbolic.svg">icons/scalable/bluetooth-paired-symbolic.svg</file>
+        <file alias="bluetooth-disconnected-symbolic.svg">icons/scalable/bluetooth-disconnected-symbolic.svg</file>
+        <file alias="feather-user-symbolic.svg">icons/scalable/feather-user-symbolic.svg</file>
+        <file alias="feather-users-symbolic.svg">icons/scalable/feather-users-symbolic.svg</file>
+        <file alias="media-playback-stop-symbolic.svg">icons/scalable/media-playback-stop-symbolic.svg</file>
+        <file alias="system-reboot-symbolic.svg">icons/scalable/system-reboot-symbolic.svg</file>
+        <file alias="system-log-out-symbolic.svg">icons/scalable/system-log-out-symbolic.svg</file>
+        <file alias="system-shutdown-symbolic.svg">icons/scalable/system-shutdown-symbolic.svg</file>
+        <file alias="weather-clear-night-symbolic.svg">icons/scalable/weather-clear-night-symbolic.svg</file>
+        <file alias="process-working-symbolic.svg">icons/scalable/process-working-symbolic.svg</file>
+    </gresource>
 </gresources>

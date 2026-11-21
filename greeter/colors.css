@@ -7,6 +7,8 @@
 @define-color window_fg_color #d5c4a1;
 @define-color popover_bg_color #3c3836;
 @define-color popover_fg_color #d5c4a1;
+@define-color view_bg_color #282828;
+@define-color view_fg_color #d5c4a1;
 
 /* Default window appearance */
 window {
@@ -48,3 +50,17 @@ dropdown popover row:selected {
     background-color: @accent_bg_color;
     color: @accent_fg_color;
 }
+/* Loading spinner */
+@keyframes spin {
+  to {
+    -gtk-icon-transform: rotate(1turn); } }
+
+spinner {
+  opacity: 0;
+  background: none;
+  -gtk-icon-source: -gtk-icontheme("process-working-symbolic"); }
+  spinner:checked {
+    opacity: 1;
+    animation: spin 1s linear infinite; }
+    spinner:checked:disabled {
+      opacity: 0.5; }
