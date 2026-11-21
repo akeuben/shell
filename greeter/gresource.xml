@@ -3,4 +3,7 @@
     <gresource prefix="/config">
         <file>config.yaml</file>
     </gresource>
+    <gresource prefix="/styles">
+        <file>colors.css</file>
+    </gresource>
 </gresources>

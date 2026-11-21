@@ -54,7 +54,7 @@ public abstract class KappashellApplication : Gtk.Application {
             this.monitor_list = Gdk.Display.get_default().get_monitors();
 
             register_widgets();
-            setup_css();
+            add_bundled_css("/styles/common.css");
             setup();
 
             error_window = new ErrorWindow();

@@ -65,6 +65,7 @@ public class KappashellGreeter : KappashellApplication {
     }
 
     protected override void setup() {
+        add_bundled_css("/styles/colors.css");
         config_dir = "/etc/kappashell";
         config_path = GLib.Path.build_path("/", config_dir, "config.yaml");
         greeter_config = new Config(config_path, "/config/config.yaml");

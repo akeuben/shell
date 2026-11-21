@@ -1,0 +1,26 @@
+@define-color accent_color #83a598;
+@define-color theme_bg_color #1d2021;
+@define-color theme_fg_color #d5c4a1;
+@define-color window_bg_color #1d2021;
+@define-color window_fg_color #d5c4a1;
+
+/* Default window appearance */
+window {
+    background-color: @theme_bg_color;
+    color: @theme_fg_color;
+}
+
+/* Default text appearance */
+label {
+    color: @theme_fg_color;
+}
+
+/* Common widget defaults */
+entry {
+    color: @theme_fg_color;
+    background-color: shade(@theme_bg_color, 1.4);
+}
+
+button {
+    color: @theme_fg_color;
+}
