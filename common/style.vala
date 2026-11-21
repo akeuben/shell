@@ -5,14 +5,14 @@ namespace Kappashell {
     [CCode (cname = "kappashell_add_css_provider_for_widget")]
     extern void add_css_provider_widget(Gtk.Widget widget, Gtk.StyleProvider provider, uint priority);
 
-    public void add_bundled_css(string path) {
+    public void add_bundled_css(string path, int priority = Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION) {
         var provider = new Gtk.CssProvider();
         provider.load_from_resource(path);
 
         add_css_provider(
             Gdk.Display.get_default(),
             provider,
-            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+            priority
         );
 
     }    
