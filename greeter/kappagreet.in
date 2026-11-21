@@ -1,0 +1,6 @@
+#!/bin/sh
+set -eu
+
+GREETER_CONFIG="@GREETER_CONFIG@"
+
+exec start-hyprland -- --config "$GREETER_CONFIG" "$@"

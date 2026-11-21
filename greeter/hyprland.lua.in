@@ -1,0 +1,47 @@
+-- Kappashell Greeter Hyprland configuration
+-- Hyprland 0.55+
+
+hl.config({
+    general = {
+        border_size = 0,
+        gaps_in = 0,
+        gaps_out = 0,
+        layout = "dwindle",
+    },
+
+    decoration = {
+        rounding = 0,
+        shadow = {
+            enabled = false,
+        },
+    },
+
+    animations = {
+        enabled = false,
+    },
+
+    input = {
+        kb_layout = "us",
+        follow_mouse = 0,
+        sensitivity = 0,
+    },
+
+    misc = {
+        disable_hyprland_logo = true,
+        disable_splash_rendering = true,
+        force_default_wallpaper = 0,
+    },
+})
+
+-- Automatically configure connected monitors
+hl.monitor({
+    output = "",
+    mode = "preferred",
+    position = "auto",
+    scale = "auto",
+})
+
+-- Start Kappashell greeter
+hl.on("hyprland.start", function()
+    hl.exec_cmd("@GREETER_EXECUTABLE@")
+end)
