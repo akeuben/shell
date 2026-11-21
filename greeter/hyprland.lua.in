@@ -43,5 +43,5 @@ hl.monitor({
 
 -- Start Kappashell greeter
 hl.on("hyprland.start", function()
-    hl.exec_cmd("@GREETER_EXECUTABLE@")
+    hl.exec_cmd("@GREETER_EXECUTABLE@; hyprctl dispatch \"hl.dsp.exit()\"")
 end)
