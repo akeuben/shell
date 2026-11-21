@@ -41,6 +41,17 @@ hl.monitor({
     scale = "auto",
 })
 
+local override = "/etc/kappashell/hyprland.lua"
+
+local f = io.open(override, "r")
+if f then
+    f:close()
+    local ok, err = pcall(dofile, override)
+    if not ok then
+        print("kappashell: error in " .. override .. ": " .. tostring(err))
+    end
+end
+
 -- Start Kappashell greeter
 hl.on("hyprland.start", function()
     hl.exec_cmd("@GREETER_EXECUTABLE@; hyprctl dispatch \"hl.dsp.exit()\"")
