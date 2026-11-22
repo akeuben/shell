@@ -60,7 +60,7 @@ public class InfoPane : Astal.Bin {
         var quotebox = new Gtk.CenterBox();
         quotebox.add_css_class("quotebox");
         quotebox.vexpand = true;
-        var quote = new Gtk.Label("Small steps make big changes");
+        var quote = new Gtk.Label(Kappashell.QuoteManager.get_default().quote);
         quote.wrap = true;
         quote.wrap_mode = Pango.WrapMode.WORD_CHAR;
         quote.max_width_chars = 20;
