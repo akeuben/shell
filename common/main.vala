@@ -135,6 +135,8 @@ public abstract class KappashellApplication : Gtk.Application {
             var monitor = current[i];
             if(bars.contains(monitor)) continue;
 
+            print("New monitor conencted: %s\n", monitor.connector);
+
             var barset = new Kappashell.BarSet(monitor);
             barset.add_windows(this);
             bars.set(monitor, barset);

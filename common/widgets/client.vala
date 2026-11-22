@@ -113,7 +113,7 @@ namespace Kappashell {
     }
 
     int compare_hypr_clients(AstalHyprland.Client a, AstalHyprland.Client b) {
-        return (a.address == b.address) ? 0 : 1;
+        return (a == b) ? 0 : 1;
     }
 
     class HyprlandClientWidget : Gtk.Box {
